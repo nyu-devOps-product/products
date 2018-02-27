@@ -10,7 +10,7 @@ Vagrant.configure(2) do |config|
   # boxes at https://atlas.hashicorp.com/search.
   config.vm.box = "ubuntu/xenial64"
   # set up network ip and port forwarding
-  config.vm.network "forwarded_port", guest: 1234, host: 1234, host_ip: "127.0.0.1"
+  config.vm.network "forwarded_port", guest: 5000, host: 5000, host_ip: "127.0.0.1"
   config.vm.network "private_network", ip: "192.168.33.10"
 
   config.vm.provider "virtualbox" do |vb|
