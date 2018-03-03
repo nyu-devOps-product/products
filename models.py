@@ -26,12 +26,13 @@ class Catalog:
         """
         if product.id < 0:
             product.set_id(self.next_index())
-            self.data.append(self)
         else:
             for i in range(len(self.data)):
                 if self.data[i].id == product.id:
                     self.data[i] = product
-                    break
+                    return
+        self.data.append(product)
+
 
     def all(self):
         """ Returns all of the Products in the database """
@@ -39,21 +40,30 @@ class Catalog:
         return [product for product in self.data]
 
     def find(self, id):
-        """ Find a Product by it's ID """
-        if len(self.data):
+        """ Find a Product by its ID """
+        if not self.data:
             return None
         products = [product for product in self.data if product.id == id]
         if products:
             return products[0]
         return None
 
+    def delete(self, product):
+        """ Removes a product from the data store """
+        self.data.remove(self.find(product.id))
+
+    def remove_all(self):
+        """ Removes all of the products from the database """
+        del self.data[:]
+        self.index = -1
+        return self.data
 
 class Product:
     # static variable
     catalog = Catalog()
 
-    # required parameters: id, name, price
-    def __init__(self, id, name, price, image_id='', description='', review_list=None):
+    # required parameters: name, price. If id isn't specified, it will be auto-incremented when added to Catalog
+    def __init__(self, name, price, id=-1, image_id='', description='', review_list=None):
         self.id = id
         self.name = name
         self.price = price
