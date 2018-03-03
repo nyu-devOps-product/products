@@ -119,7 +119,7 @@ def get_products(id):
 def create_product():
     """ Creates a product and saves it """
     payload = request.get_json()
-    product = Product()
+    product = Product(name=payload['name'], price=payload['price'])
     product.deserialize(payload)
     product.catalog.save(product)
     message = product.serialize()

@@ -76,6 +76,37 @@ class TestProductServer(unittest.TestCase):
         resp = self.app.get('/products/-1')
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
+    def test_create_product(self):
+        """ Create a product """
+        # save the current number of products for later comparison
+        product_count = self.get_product_count()
+        # add a new product
+        new_product = {'name': 'samsung hdtv', 'price': '499'}
+        data = json.dumps(new_product)
+        resp = self.app.post('/products', data=data, content_type='application/json')
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+        # Make sure location header is set
+        location = resp.headers.get('Location', None)
+        self.assertIsNotNone(location)
+        # Check the data is correct
+        new_json = json.loads(resp.data)
+        self.assertEqual(new_json['name'], 'samsung hdtv')
+        self.assertEqual(new_json['price'], '499')
+        # check that count has gone up and includes the new product
+        resp = self.app.get('/products')
+        data = json.loads(resp.data)
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(data), product_count + 1)
+        self.assertIn(new_json, data)
+
+    #test for update product with existing id
+
+    #test for adding product and specifying id
+
+    #test for adding product with missing required field
+
+    #test for updating product that doesn't exist
+
     def test_delete_product(self):
         """ Delete a product that exists """
         # save the current number of products for later comparrison
