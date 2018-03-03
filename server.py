@@ -37,7 +37,7 @@ def bad_request(error):
 
 @app.errorhandler(404)
 def not_found(error):
-    """ Handles Pets that cannot be found """
+    """ Handles products that cannot be found """
     return jsonify(status=404, error='Not Found', message=error.message), 404
 
 
@@ -66,6 +66,21 @@ def index():
                    url=url_for('list_products', _external=True)), HTTP_200_OK
 
 
+
+######################################################################
+# DELETE A PRODUCT
+######################################################################
+@app.route('/products/<int:id>', methods=['DELETE'])
+def delete_products(id):
+    """ Removes a Product from the database that matches the id """
+    product = Product.catalog.find(id)
+
+    if product:
+        Product.catalog.delete(product)
+
+    return make_response('', HTTP_204_NO_CONTENT)
+
+
 ######################################################################
 # LIST ALL PRODUCTS
 ######################################################################
@@ -75,7 +90,7 @@ def list_products():
     results = []
     # category = request.args.get('category')
     # if category:
-    #     results = Pet.find_by_category(category)
+    #     results = product.find_by_category(category)
     # else:
     results = Product.catalog.all()
     return jsonify([product.serialize() for product in results]), HTTP_200_OK
@@ -92,7 +107,7 @@ def get_products(id):
         message = product.serialize()
         return_code = HTTP_200_OK
     else:
-        message = {'error': 'Pet with id: %s was not found' % str(id)}
+        message = {'error': 'product with id: %s was not found' % str(id)}
         return_code = HTTP_404_NOT_FOUND
 
     return jsonify(message), return_code
