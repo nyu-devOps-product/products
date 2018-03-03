@@ -62,7 +62,7 @@ class Product:
     # static variable
     catalog = Catalog()
 
-    # required parameters: name, price. If id is not specified, it will be auto-incremented when added to Catalog
+    # required parameters: name, price. If id isn't specified, it will be auto-incremented when added to Catalog
     def __init__(self, name, price, id=-1, image_id='', description='', review_list=None):
         self.id = id
         self.name = name
