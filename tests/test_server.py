@@ -42,8 +42,8 @@ class TestProductServer(unittest.TestCase):
     def setUp(self):
         """ Runs before each test """
         server.Product.catalog.remove_all()
-        server.Product.catalog.save(Product(0, "iPhone 8", 649))
-        server.Product.catalog.save(Product(1, "MacBook Pro", 1799))
+        server.Product.catalog.save(Product(name="iPhone 8", price=649, id=0))
+        server.Product.catalog.save(Product(name="MacBook Pro", price=1799, id=1))
         self.app = server.app.test_client()
 
     def tearDown(self):
@@ -82,8 +82,6 @@ class TestProductServer(unittest.TestCase):
         product_count = self.get_product_count()
         # delete a product
         resp = self.app.delete('/products/1', content_type='application/json')
-        print resp
-        
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(len(resp.data), 0)
         new_count = self.get_product_count()
