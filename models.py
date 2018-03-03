@@ -24,14 +24,12 @@ class Catalog:
         Saves a Product to the data store
         This includes save a new Product or Update a product with the same id
         """
-        if product.id < 0:
-            product.set_id(self.next_index())
-            self.data.append(self)
-        else:
-            for i in range(len(self.data)):
-                if self.data[i].id == product.id:
-                    self.data[i] = product
-                    break
+        for i in range(len(self.data)):
+            if self.data[i].id == product.id:
+                self.data[i] = product
+                return
+        self.data.append(product)
+
 
     def all(self):
         """ Returns all of the Products in the database """
@@ -40,13 +38,23 @@ class Catalog:
 
     def find(self, id):
         """ Find a Product by it's ID """
-        if len(self.data):
-            return None
+        # if len(self.data):
+        #     return None
         products = [product for product in self.data if product.id == id]
         if products:
             return products[0]
         return None
 
+    def delete(self, product):
+        """ Removes a product from the data store """
+        self.data.remove(self.find(product.id))
+        print(len(self.data))
+
+    def remove_all(self):
+        """ Removes all of the products from the database """
+        del self.data[:]
+        self.index = -1
+        return self.data
 
 class Product:
     # static variable
