@@ -106,6 +106,21 @@ class Product:
                   "description": self.description, "review_list": [review.serialize() for review in self.review_list]}
         return result
 
+    def deserialize(self, data):
+        """
+        Deserializes a product from a dictionary
+        Args:
+            data (dict): A dictionary containing the product data
+        """
+        if not isinstance(data, dict):
+            raise DataValidationError('Invalid pet: body of request contained bad or no data')
+        try:
+            self.name = data['name']
+            self.price = data['price']
+        except KeyError as err:
+            raise DataValidationError('Invalid product: missing ' + err.args[0])
+        return
+
 
 class Review:
     def __init__(self, date, score, detail=''):

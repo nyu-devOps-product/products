@@ -97,6 +97,21 @@ def get_products(id):
 
     return jsonify(message), return_code
 
+######################################################################
+# ADD A NEW PRODUCT
+######################################################################
+@app.route('/products', methods=['POST'])
+def create_product():
+    """ Creates a product and saves it """
+    payload = request.get_json()
+    product = Product()
+    product.deserialize(payload)
+    product.catalog.save(product)
+    message = product.serialize()
+    response = make_response(jsonify(message), HTTP_201_CREATED)
+    response.headers['Location'] = url_for('get_products', id=product.id, _external=True)
+    return response
+
 
 ######################################################################
 #   U T I L I T Y   F U N C T I O N S
