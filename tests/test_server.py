@@ -76,6 +76,17 @@ class TestProductServer(unittest.TestCase):
         resp = self.app.get('/products/-1')
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
+    def test_get_product_none_in_list(self):
+        """ Search for a product in a catalog with no products """
+        server.Product.catalog.remove_all()
+        resp = self.app.get('/products/0')
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+        # Ensure there are no products in the catalog:
+        resp = self.app.get('/products')
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = json.loads(resp.data)
+        self.assertEqual(len(data), 0)
+
     def test_create_product(self):
         """ Create a product """
         # save the current number of products for later comparison
