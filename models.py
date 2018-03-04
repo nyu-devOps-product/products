@@ -43,7 +43,7 @@ class Catalog:
         """ Find a Product by its ID """
         if not self.data:
             return None
-        products = [product for product in self.data if product.id == id]
+        products = [product for product in self.data if str(product.id) == str(id)]
         if products:
             return products[0]
         return None
@@ -116,13 +116,39 @@ class Product:
                   "description": self.description, "review_list": [review.serialize() for review in self.review_list]}
         return result
 
+    def deserialize(self, data):
+        """
+        Deserializes a product from a dictionary
+        Args:
+            data (dict): A dictionary containing the product data
+        """
+        if not isinstance(data, dict):
+            raise DataValidationError('Invalid pet: body of request contained bad or no data')
+        # Set required attributes:
+        try:
+            self.name = data['name']
+            self.price = data['price']
+        except KeyError as err:
+            raise DataValidationError('Invalid product: missing ' + err.args[0])
+        # Set optional attributes:
+        for attribute in data:
+            if attribute not in ['name', 'price']:
+                if hasattr(self, attribute):
+                    setattr(self, attribute, data[attribute])
+                else:
+                    raise DataValidationError('Invalid product: unknown attribute ' + attribute)
+        return
+
 
 class Review:
-    def __init__(self, date, score, detail=''):
-        """ Customer Information """
-        self.date = date
+    def __init__(self, username, score, date='', detail=''):
+        self.username = username
         self.score = score
+        self.date = date
         self.detail = detail
+
+    def get_username(self):
+        return self.username
 
     def get_date(self):
         return self.date
@@ -132,6 +158,9 @@ class Review:
 
     def get_detail(self):
         return self.detail
+
+    def set_username(self, username):
+        self.username = username
 
     def set_date(self, date):
         self.date = date

@@ -76,6 +76,91 @@ class TestProductServer(unittest.TestCase):
         resp = self.app.get('/products/-1')
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
+    def test_get_product_none_in_list(self):
+        """ Search for a product in a catalog with no products """
+        server.Product.catalog.remove_all()
+        resp = self.app.get('/products/0')
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+        # Ensure there are no products in the catalog:
+        resp = self.app.get('/products')
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = json.loads(resp.data)
+        self.assertEqual(len(data), 0)
+
+    def test_create_product(self):
+        """ Create a product """
+        # save the current number of products for later comparison
+        product_count = self.get_product_count()
+        # add a new product
+        new_product = {'name': 'samsung hdtv', 'price': '499'}
+        data = json.dumps(new_product)
+        resp = self.app.post('/products', data=data, content_type='application/json')
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+        # Make sure location header is set
+        location = resp.headers.get('Location', None)
+        self.assertIsNotNone(location)
+        # Check the data is correct
+        new_json = json.loads(resp.data)
+        self.assertEqual(new_json['name'], 'samsung hdtv')
+        self.assertEqual(new_json['price'], '499')
+        # check that count has gone up and includes the new product
+        resp = self.app.get('/products')
+        data = json.loads(resp.data)
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(data), product_count + 1)
+        self.assertIn(new_json, data)
+
+    def test_create_product_with_id(self):
+        """ Create a product passing in an id """
+        # add a new product
+        new_product = {'name': 'sony vaio', 'price': '549', 'id': '2'}
+        data = json.dumps(new_product)
+        resp = self.app.post('/products', data=data, content_type='application/json')
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+        # Make sure location header is set
+        location = resp.headers.get('Location', None)
+        self.assertIsNotNone(location)
+        # Check the data is correct
+        new_json = json.loads(resp.data)
+        self.assertEqual(new_json['name'], 'sony vaio')
+        self.assertEqual(new_json['price'], '549')
+        self.assertEqual(new_json['id'], '2')
+
+    def test_create_product_with_missing_required_attribute(self):
+        """ Create a product with the name missing (required attribute) """
+        new_product = {'price': '550'}
+        data = json.dumps(new_product)
+        resp = self.app.post('/products', data=data, content_type='application/json')
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_update_product(self):
+        """ Update a product using its id """
+        new_product = {'name': 'sony vaio', 'price': '549'}
+        data = json.dumps(new_product)
+        # Update product with id 0:
+        resp = self.app.put('/products/0', data=data, content_type='application/json')
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        resp = self.app.get('/products/0', content_type='application/json')
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        new_json = json.loads(resp.data)
+        self.assertEqual(new_json['name'], 'sony vaio')
+        self.assertEqual(new_json['price'], '549')
+
+
+    def test_update_product_with_no_name(self):
+        """ Update a product with missing name (required field) """
+        new_product = {'price': '500'}
+        data = json.dumps(new_product)
+        resp = self.app.put('/products/1', data=data, content_type='application/json')
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_update_product_not_found(self):
+        """ Update a product that can't be found """
+        new_product = {"name": "Polaroid camera", "price": "55"}
+        data = json.dumps(new_product)
+        resp = self.app.put('/products/2', data=data, content_type='application/json')
+        self.assertEquals(resp.status_code, status.HTTP_404_NOT_FOUND)
+
     def test_delete_product(self):
         """ Delete a product that exists """
         # save the current number of products for later comparrison
