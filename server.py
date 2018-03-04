@@ -1,7 +1,7 @@
 import os
 import sys
 import logging
-from flask import Flask, Response, jsonify, request, json, url_for, make_response
+from flask import Flask, Response, jsonify, request, json, url_for, make_response, abort
 from models import Product, DataValidationError
 
 # Pull options from environment
@@ -119,13 +119,36 @@ def get_products(id):
 def create_product():
     """ Creates a product and saves it """
     payload = request.get_json()
-    product = Product(name=payload['name'], price=payload['price'])
+    # Ensure that required attributes are provided:
+    if('name' not in payload or 'price' not in payload):
+        abort(400)
+    # Pass on all parameters specified to new product:
+    product = Product(**payload)
     product.deserialize(payload)
     product.catalog.save(product)
     message = product.serialize()
     response = make_response(jsonify(message), HTTP_201_CREATED)
     response.headers['Location'] = url_for('get_products', id=product.id, _external=True)
     return response
+
+######################################################################
+# UPDATE AN EXISTING PRODUCT
+######################################################################
+@app.route('/products/<int:id>', methods=['PUT'])
+def update_products(id):
+    """ Updates a product in the catalog """
+    product = Product.catalog.find(id)
+    if product:
+        payload = request.get_json()
+        product.deserialize(payload)
+        product.catalog.save(product)
+        message = product.serialize()
+        return_code = HTTP_200_OK
+    else:
+        message = {'error' : 'Product with id: %s was not found' % str(id)}
+        return_code = HTTP_404_NOT_FOUND
+
+    return jsonify(message), return_code
 
 
 ######################################################################
