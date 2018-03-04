@@ -73,10 +73,7 @@ def index():
 @app.route('/products/<int:id>', methods=['DELETE'])
 def delete_products(id):
     """ Removes a Product from the database that matches the id """
-    product = Product.catalog.find(id)
-
-    if product:
-        Product.catalog.delete(product)
+    Product.catalog.delete(id)
 
     return make_response('', HTTP_204_NO_CONTENT)
 

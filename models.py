@@ -33,7 +33,6 @@ class Catalog:
                     return
         self.data.append(product)
 
-
     def all(self):
         """ Returns all of the Products in the database """
         # return a `copy` of data
@@ -48,9 +47,12 @@ class Catalog:
             return products[0]
         return None
 
-    def delete(self, product):
-        """ Removes a product from the data store """
-        self.data.remove(self.find(product.id))
+    def delete(self, id):
+        """ Removes a product with a specific id from the data store """
+        product = self.find(id)
+
+        if product:
+            self.data.remove(product)
 
     def remove_all(self):
         """ Removes all of the products from the database """
