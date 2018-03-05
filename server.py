@@ -66,17 +66,13 @@ def index():
                    url=url_for('list_products', _external=True)), HTTP_200_OK
 
 
-
 ######################################################################
 # DELETE A PRODUCT
 ######################################################################
 @app.route('/products/<int:id>', methods=['DELETE'])
 def delete_products(id):
     """ Removes a Product from the database that matches the id """
-    product = Product.catalog.find(id)
-
-    if product:
-        Product.catalog.delete(product)
+    Product.catalog.delete(id)
 
     return make_response('', HTTP_204_NO_CONTENT)
 
@@ -112,6 +108,7 @@ def get_products(id):
 
     return jsonify(message), return_code
 
+
 ######################################################################
 # ADD A NEW PRODUCT
 ######################################################################
@@ -120,7 +117,7 @@ def create_product():
     """ Creates a product and saves it """
     payload = request.get_json()
     # Ensure that required attributes are provided:
-    if('name' not in payload or 'price' not in payload):
+    if ('name' not in payload or 'price' not in payload):
         abort(400)
     # Pass on all parameters specified to new product:
     product = Product(**payload)
@@ -130,6 +127,7 @@ def create_product():
     response = make_response(jsonify(message), HTTP_201_CREATED)
     response.headers['Location'] = url_for('get_products', id=product.id, _external=True)
     return response
+
 
 ######################################################################
 # UPDATE AN EXISTING PRODUCT
@@ -145,10 +143,11 @@ def update_products(id):
         message = product.serialize()
         return_code = HTTP_200_OK
     else:
-        message = {'error' : 'Product with id: %s was not found' % str(id)}
+        message = {'error': 'Product with id: %s was not found' % str(id)}
         return_code = HTTP_404_NOT_FOUND
 
     return jsonify(message), return_code
+
 
 ######################################################################
 #   U T I L I T Y   F U N C T I O N S

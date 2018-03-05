@@ -54,6 +54,7 @@ class TestProducts(unittest.TestCase):
         self.assertEqual(product.get_id(), "0")
         self.assertEqual(product.get_image_id(), "001")
         self.assertEqual(product.get_description(), "Latest TV")
+        self.assertEqual(product.get_description(), "Latest TV")
         self.assertEqual(product.get_review_list(), review_list)
 
     def test_review_setter_getter_methods(self):
@@ -97,7 +98,7 @@ class TestProducts(unittest.TestCase):
         Product.catalog.save(self.product)
         self.assertEqual(len(Product.catalog.all()), 1)
         # delete the product and make sure it isn't in the catalog
-        Product.catalog.delete(self.product)
+        Product.catalog.delete(self.product.id)
         self.assertEqual(len(Product.catalog.all()), 0)
 
     def test_serialize_a_product(self):
