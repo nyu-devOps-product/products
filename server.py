@@ -88,11 +88,11 @@ def delete_products(id):
 def list_products():
     """ Retrieves a list of products from the database """
     results = []
-    # category = request.args.get('category')
-    # if category:
-    #     results = product.find_by_category(category)
-    # else:
-    results = Product.catalog.all()
+    keyword = request.args.get('keyword')
+    if keyword:
+        results = Product.catalog.query(keyword)
+    else:
+        results = Product.catalog.all()
     return jsonify([product.serialize() for product in results]), HTTP_200_OK
 
 
@@ -149,7 +149,6 @@ def update_products(id):
         return_code = HTTP_404_NOT_FOUND
 
     return jsonify(message), return_code
-
 
 ######################################################################
 #   U T I L I T Y   F U N C T I O N S
