@@ -173,6 +173,16 @@ class TestProducts(unittest.TestCase):
         product = Product.catalog.find(1)
         self.assertIs(product, None)
 
+    def test_query_product(self):
+        """ Query a product by Keyword """
+        Product.catalog.save(self.product)
+        match = Product.catalog.query("iPhone")
+        self.assertEqual(1, len(match))
+        product1 = Product(name="asdqweiPhone123", price="649", id="0")
+        Product.catalog.save(product1)
+        match = Product.catalog.query("iPhone")
+        self.assertEqual(2, len(match))
+
     ''' # Include once query by keyword is done
     def test_find_by_category(self):
         """ Find Pets by Category """

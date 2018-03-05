@@ -1,6 +1,6 @@
 import threading
 import time
-
+import re
 
 class DataValidationError(Exception):
     """ Used for an data validation errors when deserializing """
@@ -47,6 +47,20 @@ class Catalog:
         if products:
             return products[0]
         return None
+
+    def query(self, keyword):
+        """ Find Products by keyword """
+        found = []
+        pattern = r'.*?{0}.*?'.format(keyword)
+        for product in self.all():
+            fields = product.serialize()
+            for ele in fields:
+                if ele != "review_list":
+                    match = re.search(pattern, str(fields[ele]))
+                    if match:
+                        found.append(product)
+                        break
+        return found
 
     def delete(self, product):
         """ Removes a product from the data store """
