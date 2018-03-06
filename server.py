@@ -2,7 +2,7 @@ import os
 import sys
 import logging
 from flask import Flask, Response, jsonify, request, json, url_for, make_response, abort
-from models import Product, DataValidationError
+from models import Product, DataValidationError, Review
 
 # Pull options from environment
 DEBUG = (os.getenv('DEBUG', 'False') == 'True')
@@ -78,7 +78,7 @@ def delete_products(id):
 
 
 ######################################################################
-# LIST ALL PRODUCTS
+# LIST PRODUCTS
 ######################################################################
 @app.route('/products', methods=['GET'])
 def list_products():
@@ -89,6 +89,26 @@ def list_products():
         results = Product.catalog.query(keyword)
     else:
         results = Product.catalog.all()
+    products = results
+    sort_type = request.args.get('sort')
+    if sort_type == 'price':
+    	""" Retrieves a list of products with the lowest price showed first from the database """
+        results = sorted(products, key = lambda p : float(p.get_price()), reverse = False)    
+    elif sort_type == 'price-':
+    	""" Retrieves a list of products with the highest price showed first from the database """
+    	results = sorted(products, key = lambda p : float(p.get_price()), reverse = True)    
+    elif sort_type == 'review':
+    	""" Retrieves a list of products with the highest review showed first from the database """
+    	results = sorted(products, key = lambda p : p.avg_score(), reverse = True)
+    elif sort_type == 'name':
+    	""" Retrieves a list of products in alphabetical order from the database """
+    	results = sorted(products, key = lambda p : p.get_name().lower(), reverse = False)
+    elif sort_type == 'name-':
+    	""" Retrieves a list of products in reverse alphabetical order from the database """
+    	results = sorted(products, key = lambda p : p.get_name().lower(), reverse = True)
+#    else:
+#        results = Product.catalog.all()
+
     return jsonify([product.serialize() for product in results]), HTTP_200_OK
 
 
@@ -181,8 +201,4 @@ if __name__ == "__main__":
     print(" P R O D U C T   S H O P   S E R V I C E ")
     print("*********************************")
     initialize_logging()
-
-    # dummy data for testing
-    Product.catalog.save(Product(0, "iPhone 8", 649))
-    Product.catalog.save(Product(1, "MacBook Pro", 1799))
     app.run(host='0.0.0.0', port=int(PORT), debug=DEBUG)
