@@ -36,6 +36,205 @@ If the VM is no longer needed you can remove it with:
 
 ## List of available calls
 
+### 1. List all products
+  Retrieves a list of all products from the product catalog.
+
+* **URL**
+
+  /products
+
+* **Method:**
+
+  `GET`
+  
+* **Success Response:**
+
+  * **Code:** 200 <br />
+    **Content:** if there are products to return: `{ name: "product-name", price: "product-price", optional-attributes: "opt" }`; otherwise empty list.
+
+### 2. Read a Product
+  Retrieves a product using its `id`.
+
+* **URL**
+
+  /products/id
+
+* **Method:**
+
+  `GET`
+  
+*  **URL Params**
+
+   **Required:**
+ 
+   `id` in `/products/id`
+
+* **Success Response:**
+
+  * **Code:** 200 <br />
+    **Content:** `{ name: "product-name", price: "product-price", id: "id", optional-attributes: "opt" }`
+ 
+* **Error Response:**
+
+  * **Code:** 404 NOT FOUND <br />
+    **Content:** `{ error: product with id: id was not found }`
+
+### 3. Create a Product
+  Creates a product and saves it into the Product Catalog.
+
+* **URL**
+
+  /products
+
+* **Method:**
+
+  `POST`
+  
+*  **Data Params**
+
+   **Required:**
+ 
+   `name` -- product name
+   
+   `price` -- product price
+   
+   **Optional:**
+   
+   `id` -- product id; by default, it gets autoincremented for all products in catalog starting at 0
+   
+   `image_id` -- product image id
+   
+   `description` -- product description string
+   
+   `review_list` -- list of Review classes for the Product; by default it's an empty list
+
+* **Success Response:**
+
+  * **Code:** 201 CREATED <br />
+    **Content:** `{ name: "new-product-name", price: "new-product-price", id: "id", optional-attributes: "opt" }`
+ 
+* **Error Response:**
+
+  * **Code:** 400 BAD REQUEST
+
+### 4. Update a Product
+  Updates an existing product from the Product Catalog.
+
+* **URL**
+
+  /products/id
+
+* **Method:**
+
+  `PUT`
+  
+*  **URL Params**
+
+   **Required:**
+ 
+   `id` in `/products/id`
+
+*  **Data Params**
+
+   **Required:**
+ 
+   `name` -- product name
+   
+   `price` -- product price
+   
+   **Optional:**
+   
+   `id` -- product id; by default, it gets autoincremented for all products in catalog starting at 0
+   
+   `image_id` -- product image id
+   
+   `description` -- product description string
+   
+   `review_list` -- list of Review classes for the Product; by default it's an empty list
+
+
+* **Success Response:**
+
+  * **Code:** 200 OK <br />
+    **Content:** `{ name: "updated-product-name", price: "updated-product-price", id: "id", optional-attributes: "opt" }`
+ 
+* **Error Response:**
+
+  * **Code:** 400 BAD REQUEST
+    **Content:** `{ error: 'Product with id: id was not found' }`
+  
+### 5. Delete a Product
+    Deletes a product from the Product Catalog using its id.
+
+* **URL**
+
+  /products/id
+
+* **Method:**
+
+  `DELETE`
+
+*  **URL Params**
+
+   **Required:**
+ 
+   `id` in `/products/id`
+
+* **Success Response:**
+
+  * **Code:** 204 NO CONTENT
+
+
+### 6. Query products by keyword
+  Retrieves a subset of products from the catalog that match `keyword`.
+
+* **URL**
+
+  /products
+
+* **Method:**
+
+  `GET`
+  
+*  **Data Params**
+
+   **Optional:**
+ 
+   `keyword=[query]` -- search query which generates a subset of products that match `keyword`
+   
+* **Success Response:**
+
+  * **Code:** 200 <br />
+    **Content:** if there are products to return: `{ name: "product-name", price: "product-price", optional-attributes: "opt" }`; otherwise empty list.
+    
+    
+### 7. Sort products
+  Sorts products from the catalog based on `name`, `price` or `review score`. Can be combined with **Query products by keyword** using attribute `keyword`.
+
+* **URL**
+
+  /products
+
+* **Method:**
+
+  `GET`
+  
+*  **Data Params**
+
+   **Optional:**
+   
+   `sort=[sort-method]` -- sort results by name, price or review score. Possible values for `sort-method` are:
+   * `price`: sort by price from low to high;
+   * `price-`: sort by price from high to low;
+   * `name`: sort by product name in alphabetical order;
+   * `name-`: sort by product name in reverse alphabetical order;
+   * `review`: sort by review score of the products showing highest review scores first.
+
+* **Success Response:**
+
+  * **Code:** 200 <br />
+    **Content:** if there are products to return: `{ name: "product-name", price: "product-price", optional-attributes: "opt" }`; otherwise empty list.
+
 ## Running tests locally
 
 There is no need to run the tests locally because Travis Ci is set up on this repo to run them for you, but if you wish to run them locally after doing the prerequisite installations, you can run the following commands:
