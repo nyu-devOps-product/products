@@ -178,6 +178,17 @@ class TestProductServer(unittest.TestCase):
         resp = self.app.get('/products/5')
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
+    def test_query_one_product(self):
+        """ Get one product with keyword """
+        resp = self.app.get('/products', query_string='keyword=iPhone')
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertTrue(len(resp.data) > 0)
+        self.assertTrue('iPhone 8' in resp.data)
+        self.assertFalse('MacBook Pro' in resp.data)
+        data = json.loads(resp.data)
+        query_item = data[0]
+        self.assertEqual(query_item['name'], 'iPhone 8')
+
 
     def test_method_not_allowed(self):
         """ Call a Method thats not Allowed """
