@@ -39,14 +39,8 @@ If the VM is no longer needed you can remove it with:
 ### 1. List all products
   Retrieves a list of all products from the product catalog.
 
-* **URL**
+  `GET /products`
 
-  /products
-
-* **Method:**
-
-  `GET`
-  
 * **Success Response:**
 
   * **Code:** 200 <br />
@@ -55,13 +49,7 @@ If the VM is no longer needed you can remove it with:
 ### 2. Read a Product
   Retrieves a product using its `id`.
 
-* **URL**
-
-  /products/id
-
-* **Method:**
-
-  `GET`
+  `GET /products/id`
   
 *  **URL Params**
 
@@ -82,14 +70,8 @@ If the VM is no longer needed you can remove it with:
 ### 3. Create a Product
   Creates a product and saves it into the Product Catalog.
 
-* **URL**
+  `POST /products`
 
-  /products
-
-* **Method:**
-
-  `POST`
-  
 *  **Data Params**
 
    **Required:**
@@ -120,13 +102,7 @@ If the VM is no longer needed you can remove it with:
 ### 4. Update a Product
   Updates an existing product from the Product Catalog.
 
-* **URL**
-
-  /products/id
-
-* **Method:**
-
-  `PUT`
+  `PUT /products/id`
   
 *  **URL Params**
 
@@ -164,15 +140,9 @@ If the VM is no longer needed you can remove it with:
     **Content:** `{ error: 'Product with id: id was not found' }`
   
 ### 5. Delete a Product
-    Deletes a product from the Product Catalog using its id.
-
-* **URL**
-
-  /products/id
-
-* **Method:**
-
-  `DELETE`
+  Deletes a product from the Product Catalog using its id.
+  
+  `DELETE /products/id`
 
 *  **URL Params**
 
@@ -188,13 +158,7 @@ If the VM is no longer needed you can remove it with:
 ### 6. Query products by keyword
   Retrieves a subset of products from the catalog that match `keyword`.
 
-* **URL**
-
-  /products
-
-* **Method:**
-
-  `GET`
+  `GET /products`
   
 *  **Data Params**
 
@@ -211,14 +175,8 @@ If the VM is no longer needed you can remove it with:
 ### 7. Sort products
   Sorts products from the catalog based on `name`, `price` or `review score`. Can be combined with **Query products by keyword** using attribute `keyword`.
 
-* **URL**
+  `GET /products`
 
-  /products
-
-* **Method:**
-
-  `GET`
-  
 *  **Data Params**
 
    **Optional:**
