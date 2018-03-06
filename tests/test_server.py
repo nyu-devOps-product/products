@@ -24,7 +24,7 @@ import logging
 import unittest
 import json
 from flask_api import status    # HTTP Status Codes
-from models import Product, DataValidationError
+from models import Product, DataValidationError, Review
 import server
 
 ######################################################################
@@ -194,6 +194,80 @@ class TestProductServer(unittest.TestCase):
         """ Call a Method thats not Allowed """
         resp = self.app.post('/products/0')
         self.assertEqual(resp.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def test_sort_by_lowest_price(self):
+        """Show the product with the lowest price first"""
+        resp = self.app.get('/products?sort=price')
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = json.loads(resp.data)
+        self.assertEqual(data[0]['name'], 'iPhone 8')
+        self.assertEqual(data[1]['name'], 'MacBook Pro')
+
+    def test_sort_by_highest_price(self):
+        """Show the product with the highest price first"""
+        resp = self.app.get('/products?sort=price-')
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = json.loads(resp.data)
+        self.assertEqual(data[0]['name'], 'MacBook Pro')
+        self.assertEqual(data[1]['name'], 'iPhone 8')
+
+    def test_sort_by_highest_review(self):
+        """Show the product with the highest review first"""
+        watch = Product(name="I Watch", price=329)
+        watch.set_id("2")
+        watch.set_image_id("001")
+        watch.set_description("Smart Watch")
+        watch_review_list = [Review(username="applefan", score="4", detail="OK"),
+        Review(username="helloworld", score="4", detail="As expected"),
+        Review(username="pythonfan", score="3", detail="So So")
+        ]
+        watch.set_review_list(watch_review_list)
+        server.Product.catalog.save(watch)
+        self.assertEqual(watch.get_name(), "I Watch")
+        self.assertEqual(watch.get_price(), 329)
+        self.assertEqual(watch.get_id(), "2")
+        self.assertEqual(watch.get_image_id(), "001")
+        self.assertEqual(watch.get_description(), "Smart Watch")
+        self.assertEqual(watch.get_review_list(), watch_review_list)
+        tv = Product(name="Apple TV", price=9999)
+        tv.set_id("3")
+        tv.set_image_id("001")
+        tv.set_description("Hi-end TV")
+        tv_review_list = [Review(username="applelover", score="5", detail="Excellent"),
+        Review(username="tvfan", score="5", detail="Loving this!!"),
+        Review(username="devops team member", score="5", detail="Highly recommend!"),
+        Review(username="nyu", score="5", detail="Nice!")
+        ]
+        tv.set_review_list(tv_review_list)
+        server.Product.catalog.save(tv)
+        self.assertEqual(tv.get_name(), "Apple TV")
+        self.assertEqual(tv.get_price(), 9999)
+        self.assertEqual(tv.get_id(), "3")
+        self.assertEqual(tv.get_image_id(), "001")
+        self.assertEqual(tv.get_description(), "Hi-end TV")
+        self.assertEqual(tv.get_review_list(), tv_review_list)
+        resp = self.app.get('/products?sort=review')
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = json.loads(resp.data)
+        self.assertEqual(data[0]['name'], 'Apple TV')
+        self.assertEqual(data[1]['name'], 'I Watch')
+        
+    def test_sort_by_alphabetical_order(self):
+        """Show the product in alphabetical order"""
+        resp = self.app.get('/products?sort=name')
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = json.loads(resp.data)
+        self.assertEqual(data[0]['name'], 'iPhone 8')
+        self.assertEqual(data[1]['name'], 'MacBook Pro')
+
+    def test_sort_by_reverse_alphabetical_order(self):
+        """Show the product in reverse alphabetical order"""
+        resp = self.app.get('/products?sort=name-')
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = json.loads(resp.data)
+        self.assertEqual(data[1]['name'], 'iPhone 8')
+        self.assertEqual(data[0]['name'], 'MacBook Pro')
+        
 
 
 ######################################################################
