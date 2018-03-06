@@ -139,6 +139,15 @@ class Product:
                     raise DataValidationError('Invalid product: unknown attribute ' + attribute)
         return
 
+    def avg_score(self):
+        res = 0.0
+        count = 0
+        if len(self.review_list) == 0:
+            return 0.0
+        for review in self.review_list:
+            count += 1
+            res += float(review.get_score())
+        return res / count
 
 class Review:
     def __init__(self, username, score, date='', detail=''):
