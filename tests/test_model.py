@@ -184,25 +184,22 @@ class TestProducts(unittest.TestCase):
         match = Product.catalog.query("iPhone")
         self.assertEqual(2, len(match))
 
-    ''' # Include once query by keyword is done
-    def test_find_by_category(self):
-        """ Find Pets by Category """
-        Pet(0, "fido", "dog").save()
-        Pet(0, "kitty", "cat").save()
-        pets = Pet.find_by_category("cat")
-        self.assertNotEqual(len(pets), 0)
-        self.assertEqual(pets[0].category, "cat")
-        self.assertEqual(pets[0].name, "kitty")
+    def test_get_review_avg_score(self):
+        """ Get average score for a list of reviews """
+        watch_review_list = [Review(username="applefan", score="4", detail="OK"),
+        Review(username="helloworld", score="4", detail="As expected"),
+        Review(username="pythonfan", score="3", detail="So So")]
+        watch = Product(name="I Watch", price=329, id="2", image_id="001", review_list=watch_review_list)
+        avg_score = float(4+4+3)/3
+        watch.set_review_list(watch_review_list)
+        Product.catalog.save(watch)
+        w = Product.catalog.find(2)
+        self.assertEquals(Product.avg_score(w), avg_score)
 
-    def test_find_by_name(self):
-        """ Find a Pet by Name """
-        Pet(0, "fido", "dog").save()
-        Pet(0, "kitty", "cat").save()
-        pets = Pet.find_by_name("kitty")
-        self.assertEqual(len(pets), 1)
-        self.assertEqual(pets[0].category, "cat")
-        self.assertEqual(pets[0].name, "kitty")
-    '''
+    def test_get_review_avg_score_empty_reviews_list(self):
+        """ Get average score for an empty list of reviews """
+        self.assertEquals(self.product.review_list, [])
+        self.assertEqual(Product.avg_score(self.product), 0.0)
 
 ######################################################################
 #   M A I N
