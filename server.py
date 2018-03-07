@@ -1,6 +1,8 @@
 import os
 import sys
 import logging
+from functools import wraps
+
 from flask import Flask, Response, jsonify, request, json, url_for, make_response, abort
 from models import Product, DataValidationError, Review
 
@@ -10,6 +12,7 @@ PORT = os.getenv('PORT', '5000')
 
 # Create Flask application
 app = Flask(__name__)
+app.config['LOGGING_LEVEL'] = logging.INFO
 
 # Status Codes
 HTTP_200_OK = 200
@@ -18,6 +21,7 @@ HTTP_204_NO_CONTENT = 204
 HTTP_400_BAD_REQUEST = 400
 HTTP_404_NOT_FOUND = 404
 HTTP_409_CONFLICT = 409
+HTTP_415_UNSUPPORTED_MEDIA_TYPE = 415
 
 
 ######################################################################
@@ -49,10 +53,39 @@ def method_not_supported(error):
                            ' Check your HTTP method and try again.'), 405
 
 
+@app.errorhandler(415)
+def mediatype_not_supported(error):
+    """ Handles unsuppoted media requests with 415_UNSUPPORTED_MEDIA_TYPE """
+    message = error.message or str(error)
+    app.logger.info(message)
+    return jsonify(status=415, error='Unsupported media type', message=message), 415
+
+
 @app.errorhandler(500)
 def internal_server_error(error):
     """ Handles catostrophic errors """
     return jsonify(status=500, error='Internal Server Error', message=error.message), 500
+
+
+######################################################################
+# DECORATORS
+######################################################################
+def requires_content_type(*content_types):
+    """ Use this decorator to check content type """
+    def decorator(func):
+        """ Inner decorator """
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            """ Checks that the content type is correct """
+            for content_type in content_types:
+                if request.headers['Content-Type'] == content_type:
+                    return func(*args, **kwargs)
+
+            app.logger.error('Invalid Content-Type: %s', request.headers['Content-Type'])
+            abort(HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+                  'Content-Type must be {}'.format(content_types))
+        return wrapper
+    return decorator
 
 
 ######################################################################
@@ -64,17 +97,6 @@ def index():
     return jsonify(name='Products REST API Service',
                    version='1.0',
                    url=url_for('list_products', _external=True)), HTTP_200_OK
-
-
-######################################################################
-# DELETE A PRODUCT
-######################################################################
-@app.route('/products/<int:id>', methods=['DELETE'])
-def delete_products(id):
-    """ Removes a Product from the database that matches the id """
-    Product.catalog.delete(id)
-
-    return make_response('', HTTP_204_NO_CONTENT)
 
 
 ######################################################################
@@ -92,24 +114,22 @@ def list_products():
     products = results
     sort_type = request.args.get('sort')
     if sort_type == 'price':
-    	""" Retrieves a list of products with the lowest price showed first from the database """
-        results = sorted(products, key = lambda p : float(p.get_price()), reverse = False)    
+        """ Retrieves a list of products with the lowest price showed first from the database """
+        results = sorted(products, key=lambda p: float(p.get_price()), reverse=False)
     elif sort_type == 'price-':
-    	""" Retrieves a list of products with the highest price showed first from the database """
-    	results = sorted(products, key = lambda p : float(p.get_price()), reverse = True)    
+        """ Retrieves a list of products with the highest price showed first from the database """
+        results = sorted(products, key=lambda p: float(p.get_price()), reverse=True)
     elif sort_type == 'review':
-    	""" Retrieves a list of products with the highest review showed first from the database """
-    	results = sorted(products, key = lambda p : p.avg_score(), reverse = True)
+        """ Retrieves a list of products with the highest review showed first from the database """
+        results = sorted(products, key=lambda p: p.avg_score(), reverse=True)
     elif sort_type == 'name':
-    	""" Retrieves a list of products in alphabetical order from the database """
-    	results = sorted(products, key = lambda p : p.get_name().lower(), reverse = False)
+        """ Retrieves a list of products in alphabetical order from the database """
+        results = sorted(products, key=lambda p: p.get_name().lower(), reverse=False)
     elif sort_type == 'name-':
-    	""" Retrieves a list of products in reverse alphabetical order from the database """
-    	results = sorted(products, key = lambda p : p.get_name().lower(), reverse = True)
-#    else:
-#        results = Product.catalog.all()
+        """ Retrieves a list of products in reverse alphabetical order from the database """
+        results = sorted(products, key=lambda p: p.get_name().lower(), reverse=True)
 
-    return jsonify([product.serialize() for product in results]), HTTP_200_OK
+    return make_response(jsonify([product.serialize() for product in results]), HTTP_200_OK)
 
 
 ######################################################################
@@ -119,59 +139,96 @@ def list_products():
 def get_products(id):
     """ Retrieves a Product with a specific id """
     product = Product.catalog.find(id)
-    if product:
-        message = product.serialize()
-        return_code = HTTP_200_OK
-    else:
-        message = {'error': 'product with id: %s was not found' % str(id)}
-        return_code = HTTP_404_NOT_FOUND
+    if not product:
+        abort(HTTP_404_NOT_FOUND, "Product with id '{}' was not found.".format(id))
 
-    return jsonify(message), return_code
+    return make_response(jsonify(product.serialize()), HTTP_200_OK)
 
 
 ######################################################################
 # ADD A NEW PRODUCT
 ######################################################################
 @app.route('/products', methods=['POST'])
+@requires_content_type('application/json', 'application/x-www-form-urlencoded')
 def create_product():
-    """ Creates a product and saves it """
-    payload = request.get_json()
-    # Ensure that required attributes are provided:
-    if ('name' not in payload or 'price' not in payload):
-        abort(400)
-    # Pass on all parameters specified to new product:
-    product = Product(**payload)
-    product.deserialize(payload)
-    product.catalog.save(product)
+    """
+    Creates a product and saves it.
+    This endpoint will create a Product based the data in the body that is posted
+    or data that is sent via an html form post.
+    """
+    data = {}
+    # Check for form submission data
+    if request.headers.get('Content-Type') == 'application/x-www-form-urlencoded':
+        app.logger.info('Processing FORM data')
+        data = {
+            "id": request.form['id'],
+            "name": request.form['name'],
+            "price": request.form['price'],
+            "image_id": request.form['image_id'],
+            "description": request.form['description'],
+            "review_list": request.form['review_list'].split("\t")
+        }
+    else:
+        app.logger.info('Processing JSON data')
+        data = request.get_json()
+
+    product = Product()  # this will auto generate an id for product
+    product.deserialize(data)
+    Product.catalog.save(product)
     message = product.serialize()
-    response = make_response(jsonify(message), HTTP_201_CREATED)
-    response.headers['Location'] = url_for('get_products', id=product.id, _external=True)
-    return response
+    return make_response(jsonify(message), HTTP_201_CREATED,
+                  {'Location': url_for('get_products', product_id=product.id, _external=True)})
 
 
 ######################################################################
 # UPDATE AN EXISTING PRODUCT
 ######################################################################
 @app.route('/products/<int:id>', methods=['PUT'])
+@requires_content_type('application/json')
 def update_products(id):
     """ Updates a product in the catalog """
     product = Product.catalog.find(id)
-    if product:
-        payload = request.get_json()
-        product.deserialize(payload)
-        product.catalog.save(product)
-        message = product.serialize()
-        return_code = HTTP_200_OK
-    else:
-        message = {'error': 'Product with id: %s was not found' % str(id)}
-        return_code = HTTP_404_NOT_FOUND
 
-    return jsonify(message), return_code
+    if not product:
+        abort(HTTP_404_NOT_FOUND, "Product with id '{}' was not found.".format(id))
+    product.deserialize(request.get_json())
+    Product.catalog.save()
+    return make_response(jsonify(product.serialize()), HTTP_200_OK)
+
+
+######################################################################
+# DELETE A PRODUCT
+######################################################################
+@app.route('/products/<int:id>', methods=['DELETE'])
+def delete_products(id):
+    """ Removes a Product from the database that matches the id """
+    Product.catalog.delete(id)
+
+    return make_response('', HTTP_204_NO_CONTENT)
 
 
 ######################################################################
 #   U T I L I T Y   F U N C T I O N S
 ######################################################################
+
+@app.before_first_request
+def init_db(redis=None):
+    """ Initlaize the model """
+    Product.catalog.init_db(redis)
+
+
+# load sample data
+def data_load(payload):
+    """ Loads a Product into the database """
+    product = Product(**payload)
+    Product.catalog.save(product)
+
+
+def data_reset():
+    """ Removes all Pets from the database """
+    Product.catalog.remove_all()
+
+
 def initialize_logging(log_level=logging.INFO):
     """ Initialized the default logging to STDOUT """
     if not app.debug:
@@ -208,6 +265,6 @@ if __name__ == "__main__":
                       Review(username="tvfan", score="5", detail="Loving this!!"),
                       Review(username="devops team member", score="5", detail="Highly recommend!"),
                       Review(username="nyu", score="5", detail="Nice!")]
-    Product.catalog.save(Product("iPhone 8", 649, 0, review_list=phone_review_list))
-    Product.catalog.save(Product("MacBook Pro", 1799, 1, review_list=pc_review_list))
+    Product.catalog.save(Product(0, "iPhone 8", 649, review_list=phone_review_list))
+    Product.catalog.save(Product(0, "MacBook Pro", 1799, review_list=pc_review_list))
     app.run(host='0.0.0.0', port=int(PORT), debug=DEBUG)
