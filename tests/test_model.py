@@ -25,6 +25,8 @@ from models import Product, DataValidationError, Review
 ######################################################################
 #  T E S T   C A S E S
 ######################################################################
+
+
 class TestProducts(unittest.TestCase):
     """ Test Cases for Products """
 
@@ -46,7 +48,8 @@ class TestProducts(unittest.TestCase):
         product.set_id("0")
         product.set_image_id("001")
         product.set_description("Latest TV")
-        review = Review(username="couchpotato123", score="5", detail="Fantastic TV")
+        review = Review(username="couchpotato123",
+                        score="5", detail="Fantastic TV")
         review_list = [review]
         product.set_review_list(review_list)
         self.assertEqual(product.get_name(), "Samsung HDTV")
@@ -112,7 +115,8 @@ class TestProducts(unittest.TestCase):
 
     def test_deserialize_a_product(self):
         """ Test deserialization of a product """
-        data = {"name":"iPhone", "price":"649", "id":"0", "image_id":"0005", "description":"Latest phone model."}
+        data = {"name": "iPhone", "price": "649", "id": "0",
+                "image_id": "0005", "description": "Latest phone model."}
         product = Product(name="Samsung", price="749")
         product.deserialize(data)
         self.assertNotEqual(product, None)
@@ -126,20 +130,21 @@ class TestProducts(unittest.TestCase):
     def test_deserialize_without_required_fields(self):
         """ Deserialize a product without all required fields """
         # Should fail deserializing a product with missing name (required attribute):
-        data = {"price":"649", "id":"0"}
+        data = {"price": "649", "id": "0"}
         self.assertRaises(DataValidationError, self.product.deserialize, data)
         # Should fail deserializing a product with missing price (required attribute):
-        data = {"name":"iPhone", "id":"0"}
+        data = {"name": "iPhone", "id": "0"}
         self.assertRaises(DataValidationError, self.product.deserialize, data)
         # Should successfully deserialize product with all required fields:
-        data = {"name":"Samsung", "price":"900"}
+        data = {"name": "Samsung", "price": "900"}
         self.product.deserialize(data)
         self.assertEqual(self.product.name, "Samsung")
         self.assertEqual(self.product.price, "900")
 
     def test_deserialize_with_bad_attributes(self):
         """ Deserialize a product with bad attributes """
-        data = {"name":"Samsung", "price":"900", "id":"0", "bad_attribute":"740"}
+        data = {"name": "Samsung", "price": "900",
+                "id": "0", "bad_attribute": "740"}
         self.assertRaises(DataValidationError, self.product.deserialize, data)
 
     def test_deserialize_with_no_data(self):
@@ -148,7 +153,8 @@ class TestProducts(unittest.TestCase):
 
     def test_deserialize_with_bad_data(self):
         """ Deserailize a product with bad data """
-        self.assertRaises(DataValidationError, self.product.deserialize, "data")
+        self.assertRaises(DataValidationError,
+                          self.product.deserialize, "data")
 
     def test_find_product(self):
         """ Find a product by ID """
@@ -187,9 +193,11 @@ class TestProducts(unittest.TestCase):
     def test_get_review_avg_score(self):
         """ Get average score for a list of reviews """
         watch_review_list = [Review(username="applefan", score="4", detail="OK"),
-        Review(username="helloworld", score="4", detail="As expected"),
-        Review(username="pythonfan", score="3", detail="So So")]
-        watch = Product(name="I Watch", price=329, id="2", image_id="001", review_list=watch_review_list)
+                             Review(username="helloworld",
+                                    score="4", detail="As expected"),
+                             Review(username="pythonfan", score="3", detail="So So")]
+        watch = Product(name="I Watch", price=329, id="2",
+                        image_id="001", review_list=watch_review_list)
         avg_score = float(4+4+3)/3
         watch.set_review_list(watch_review_list)
         Product.catalog.save(watch)
@@ -200,6 +208,7 @@ class TestProducts(unittest.TestCase):
         """ Get average score for an empty list of reviews """
         self.assertEquals(self.product.review_list, [])
         self.assertEqual(Product.avg_score(self.product), 0.0)
+
 
 ######################################################################
 #   M A I N

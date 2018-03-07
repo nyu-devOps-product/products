@@ -24,12 +24,14 @@ import logging
 import unittest
 import json
 from flask_api import status    # HTTP Status Codes
-from models import Product, DataValidationError, Review
+from models import Product, Review
 import server
 
 ######################################################################
 #  T E S T   C A S E S
 ######################################################################
+
+
 class TestProductServer(unittest.TestCase):
     """ product Server Tests """
 
@@ -43,7 +45,8 @@ class TestProductServer(unittest.TestCase):
         """ Runs before each test """
         server.Product.catalog.remove_all()
         server.Product.catalog.save(Product(name="iPhone 8", price=649, id=0))
-        server.Product.catalog.save(Product(name="MacBook Pro", price=1799, id=1))
+        server.Product.catalog.save(
+            Product(name="MacBook Pro", price=1799, id=1))
         self.app = server.app.test_client()
 
     def tearDown(self):
@@ -94,7 +97,8 @@ class TestProductServer(unittest.TestCase):
         # add a new product
         new_product = {'name': 'samsung hdtv', 'price': '499'}
         data = json.dumps(new_product)
-        resp = self.app.post('/products', data=data, content_type='application/json')
+        resp = self.app.post('/products', data=data,
+                             content_type='application/json')
         self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
         # Make sure location header is set
         location = resp.headers.get('Location', None)
@@ -115,7 +119,8 @@ class TestProductServer(unittest.TestCase):
         # add a new product
         new_product = {'name': 'sony vaio', 'price': '549', 'id': '2'}
         data = json.dumps(new_product)
-        resp = self.app.post('/products', data=data, content_type='application/json')
+        resp = self.app.post('/products', data=data,
+                             content_type='application/json')
         self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
         # Make sure location header is set
         location = resp.headers.get('Location', None)
@@ -130,7 +135,8 @@ class TestProductServer(unittest.TestCase):
         """ Create a product with the name missing (required attribute) """
         new_product = {'price': '550'}
         data = json.dumps(new_product)
-        resp = self.app.post('/products', data=data, content_type='application/json')
+        resp = self.app.post('/products', data=data,
+                             content_type='application/json')
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_update_product(self):
@@ -138,7 +144,8 @@ class TestProductServer(unittest.TestCase):
         new_product = {'name': 'sony vaio', 'price': '549'}
         data = json.dumps(new_product)
         # Update product with id 0:
-        resp = self.app.put('/products/0', data=data, content_type='application/json')
+        resp = self.app.put('/products/0', data=data,
+                            content_type='application/json')
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         resp = self.app.get('/products/0', content_type='application/json')
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
@@ -146,19 +153,20 @@ class TestProductServer(unittest.TestCase):
         self.assertEqual(new_json['name'], 'sony vaio')
         self.assertEqual(new_json['price'], '549')
 
-
     def test_update_product_with_no_name(self):
         """ Update a product with missing name (required field) """
         new_product = {'price': '500'}
         data = json.dumps(new_product)
-        resp = self.app.put('/products/1', data=data, content_type='application/json')
+        resp = self.app.put('/products/1', data=data,
+                            content_type='application/json')
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_update_product_not_found(self):
         """ Update a product that can't be found """
         new_product = {"name": "Polaroid camera", "price": "55"}
         data = json.dumps(new_product)
-        resp = self.app.put('/products/2', data=data, content_type='application/json')
+        resp = self.app.put('/products/2', data=data,
+                            content_type='application/json')
         self.assertEquals(resp.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_delete_product(self):
@@ -171,7 +179,6 @@ class TestProductServer(unittest.TestCase):
         self.assertEqual(len(resp.data), 0)
         new_count = self.get_product_count()
         self.assertEqual(new_count, product_count - 1)
-
 
     def test_get_nonexisting_product(self):
         """ Get a product that doesn't exist """
@@ -188,7 +195,6 @@ class TestProductServer(unittest.TestCase):
         data = json.loads(resp.data)
         query_item = data[0]
         self.assertEqual(query_item['name'], 'iPhone 8')
-
 
     def test_method_not_allowed(self):
         """ Call a Method thats not Allowed """
@@ -218,9 +224,10 @@ class TestProductServer(unittest.TestCase):
         watch.set_image_id("001")
         watch.set_description("Smart Watch")
         watch_review_list = [Review(username="applefan", score="4", detail="OK"),
-        Review(username="helloworld", score="4", detail="As expected"),
-        Review(username="pythonfan", score="3", detail="So So")
-        ]
+                             Review(username="helloworld",
+                                    score="4", detail="As expected"),
+                             Review(username="pythonfan",
+                                    score="3", detail="So So")]
         watch.set_review_list(watch_review_list)
         server.Product.catalog.save(watch)
         self.assertEqual(watch.get_name(), "I Watch")
@@ -234,10 +241,11 @@ class TestProductServer(unittest.TestCase):
         tv.set_image_id("001")
         tv.set_description("Hi-end TV")
         tv_review_list = [Review(username="applelover", score="5", detail="Excellent"),
-        Review(username="tvfan", score="5", detail="Loving this!!"),
-        Review(username="devops team member", score="5", detail="Highly recommend!"),
-        Review(username="nyu", score="5", detail="Nice!")
-        ]
+                          Review(username="tvfan", score="5",
+                                 detail="Loving this!!"),
+                          Review(username="devops team member",
+                                 score="5", detail="Highly recommend!"),
+                          Review(username="nyu", score="5", detail="Nice!")]
         tv.set_review_list(tv_review_list)
         server.Product.catalog.save(tv)
         self.assertEqual(tv.get_name(), "Apple TV")
@@ -251,7 +259,7 @@ class TestProductServer(unittest.TestCase):
         data = json.loads(resp.data)
         self.assertEqual(data[0]['name'], 'Apple TV')
         self.assertEqual(data[1]['name'], 'I Watch')
-        
+
     def test_sort_by_alphabetical_order(self):
         """Show the product in alphabetical order"""
         resp = self.app.get('/products?sort=name')
@@ -267,7 +275,6 @@ class TestProductServer(unittest.TestCase):
         data = json.loads(resp.data)
         self.assertEqual(data[1]['name'], 'iPhone 8')
         self.assertEqual(data[0]['name'], 'MacBook Pro')
-        
 
 
 ######################################################################

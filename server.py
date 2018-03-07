@@ -1,7 +1,18 @@
+"""
+This service is written with Python Flask
+Paths
+-----
+GET   /products - Retrieves a list of product from the database
+GET   /products/{id} - Retrirves a product with a specific id
+POST  /products - Creates a product in the datbase from the posted database
+PUT   /products/{id} - Updates a product in the database fom the posted database
+DELETE /products/{id} - Removes a product from the database that matches the id
+"""
+
 import os
 import sys
 import logging
-from flask import Flask, Response, jsonify, request, json, url_for, make_response, abort
+from flask import Flask, jsonify, request, url_for, make_response, abort
 from models import Product, DataValidationError, Review
 
 # Pull options from environment
@@ -45,7 +56,7 @@ def not_found(error):
 def method_not_supported(error):
     """ Handles bad method calls """
     return jsonify(status=405, error='Method not Allowed',
-                   message='Your request method is not supported.' \
+                   message='Your request method is not supported.'
                            ' Check your HTTP method and try again.'), 405
 
 
@@ -92,20 +103,24 @@ def list_products():
     products = results
     sort_type = request.args.get('sort')
     if sort_type == 'price':
-    	""" Retrieves a list of products with the lowest price showed first from the database """
-        results = sorted(products, key = lambda p : float(p.get_price()), reverse = False)    
+        # Retrieves a list of products with the lowest price showed first from the database
+        results = sorted(products, key=lambda p: float(
+            p.get_price()), reverse=False)
     elif sort_type == 'price-':
-    	""" Retrieves a list of products with the highest price showed first from the database """
-    	results = sorted(products, key = lambda p : float(p.get_price()), reverse = True)    
+        # Retrieves a list of products with the highest price showed first from the database
+        results = sorted(products, key=lambda p: float(
+            p.get_price()), reverse=True)
     elif sort_type == 'review':
-    	""" Retrieves a list of products with the highest review showed first from the database """
-    	results = sorted(products, key = lambda p : p.avg_score(), reverse = True)
+        # Retrieves a list of products with the highest review showed first from the database
+        results = sorted(products, key=lambda p: p.avg_score(), reverse=True)
     elif sort_type == 'name':
-    	""" Retrieves a list of products in alphabetical order from the database """
-    	results = sorted(products, key = lambda p : p.get_name().lower(), reverse = False)
+        # Retrieves a list of products in alphabetical order from the database
+        results = sorted(
+            products, key=lambda p: p.get_name().lower(), reverse=False)
     elif sort_type == 'name-':
-    	""" Retrieves a list of products in reverse alphabetical order from the database """
-    	results = sorted(products, key = lambda p : p.get_name().lower(), reverse = True)
+        # Retrieves a list of products in reverse alphabetical order from the database
+        results = sorted(
+            products, key=lambda p: p.get_name().lower(), reverse=True)
 #    else:
 #        results = Product.catalog.all()
 
@@ -145,7 +160,8 @@ def create_product():
     product.catalog.save(product)
     message = product.serialize()
     response = make_response(jsonify(message), HTTP_201_CREATED)
-    response.headers['Location'] = url_for('get_products', id=product.id, _external=True)
+    response.headers['Location'] = url_for(
+        'get_products', id=product.id, _external=True)
     return response
 
 
@@ -175,7 +191,7 @@ def update_products(id):
 def initialize_logging(log_level=logging.INFO):
     """ Initialized the default logging to STDOUT """
     if not app.debug:
-        print('Setting up logging...')
+        print 'Setting up logging...'
         # Set up default logging for submodules to use STDOUT
         # datefmt='%m/%d/%Y %I:%M:%S %p'
         fmt = '[%(asctime)s] %(levelname)s in %(module)s: %(message)s'
@@ -197,17 +213,22 @@ def initialize_logging(log_level=logging.INFO):
 #   M A I N
 ######################################################################
 if __name__ == "__main__":
-    print("*********************************")
-    print(" P R O D U C T   S H O P   S E R V I C E ")
-    print("*********************************")
+    print "*********************************"
+    print " P R O D U C T   S H O P   S E R V I C E "
+    print "*********************************"
     initialize_logging()
     phone_review_list = [Review(username="applefan", score="4", detail="OK"),
-                         Review(username="helloworld", score="4", detail="As expected"),
+                         Review(username="helloworld",
+                                score="4", detail="As expected"),
                          Review(username="pythonfan", score="3", detail="So So")]
     pc_review_list = [Review(username="applelover", score="5", detail="Excellent"),
-                      Review(username="tvfan", score="5", detail="Loving this!!"),
-                      Review(username="devops team member", score="5", detail="Highly recommend!"),
+                      Review(username="tvfan", score="5",
+                             detail="Loving this!!"),
+                      Review(username="devops team member",
+                             score="5", detail="Highly recommend!"),
                       Review(username="nyu", score="5", detail="Nice!")]
-    Product.catalog.save(Product("iPhone 8", 649, 0, review_list=phone_review_list))
-    Product.catalog.save(Product("MacBook Pro", 1799, 1, review_list=pc_review_list))
+    Product.catalog.save(
+        Product("iPhone 8", 649, 0, review_list=phone_review_list))
+    Product.catalog.save(
+        Product("MacBook Pro", 1799, 1, review_list=pc_review_list))
     app.run(host='0.0.0.0', port=int(PORT), debug=DEBUG)
