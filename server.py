@@ -172,9 +172,9 @@ def create_product():
         app.logger.info('Processing JSON data')
         data = request.get_json()
 
-    product = Product()  # this will auto generate an id for product
+    product = Product()
     product.deserialize(data)
-    Product.catalog.save(product)
+    Product.catalog.save(product)  # this will auto generate an id for product
     message = product.serialize()
     return make_response(jsonify(message), HTTP_201_CREATED,
                   {'Location': url_for('get_products', product_id=product.id, _external=True)})

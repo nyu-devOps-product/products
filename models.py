@@ -247,7 +247,7 @@ class Product:
 
 
 class Review:
-    def __init__(self, username, score, date='', detail=''):
+    def __init__(self, username='', score=0, date='', detail=''):
         self.username = username
         self.score = score
         self.date = date
