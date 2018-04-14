@@ -247,6 +247,6 @@ class Review(object):
 
     def serialize(self):
         """ Serializes a Review into a dictionary """
-        result = {"date": self.date,
+        result = {"username": self.username, "date": self.date,
                   "score": self.score, "detail": self.detail}
         return result
