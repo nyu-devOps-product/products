@@ -193,6 +193,30 @@ If the VM is no longer needed you can remove it with:
   * **Code:** 200 <br />
     **Content:** if there are products to return: `{ name: "product-name", price: "product-price", optional-attributes: "opt" }`; otherwise empty list.
 
+### 8. Review product
+  Posts a review for product with id `id`.
+
+  `PUT /products`
+
+*  **Data Params**
+
+   **Required:**
+ 
+   `username` -- username
+   
+   `score` -- review score for product
+   
+   **Optional:**
+   
+   `date` -- date when review was posted
+   
+   `detail` -- more detailed review
+
+* **Success Response:**
+
+  * **Code:** 200 <br />
+    **Content:** `{ name: "product-name", price: "product-price", review_list: [list of review including the new one] }`
+
 ## Running tests locally
 
 There is no need to run the tests locally because Travis Ci is set up on this repo to run them for you, but if you wish to run them locally after doing the prerequisite installations, you can run the following commands:
