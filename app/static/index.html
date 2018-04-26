@@ -45,21 +45,35 @@
                   <input type="text" class="form-control" id="product_name" placeholder="Enter name for Product">
                 </div>
               </div>
+              
               <div class="form-group">
-                <label class="control-label col-sm-2" for="product_category">Category:</label>
+                <label class="control-label col-sm-2" for="product_price">Price:</label>
                 <div class="col-sm-10">
-                  <input type="text" class="form-control" id="product_category" placeholder="Enter category for Product">
+                  <input type="text" class="form-control" id="product_price" placeholder="Enter price for Product">
                 </div>
               </div>
+              
               <div class="form-group">
-                <label class="control-label col-sm-2" for="product_available">Available:</label>
+                <label class="control-label col-sm-2" for="product_image">Image_id:</label>
                 <div class="col-sm-10">
-                  <select class="form-control" id="product_available">
-                      <option value="true" selected>True</option>
-                      <option value="false">False</option>
-                  </select>
+                  <input type="text" class="form-control" id="product_image" placeholder="Enter image id for Product">
                 </div>
               </div>
+
+              <div class="form-group">
+                <label class="control-label col-sm-2" for="product_description">Description:</label>
+                <div class="col-sm-10">
+                  <input type="text" class="form-control" id="product_description" placeholder="Enter description for Product">
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label class="control-label col-sm-2" for="product_review">Review:</label>
+                <div class="col-sm-10">
+                  <input type="text" class="form-control" id="product_review" placeholder="Enter review for Product">
+                </div>
+              </div>
+            
               <div class="form-group">
                 <div class="col-sm-offset-2 col-sm-10">
                   <button type="submit" class="btn btn-primary" id="search-btn">Search</button>
@@ -78,8 +92,10 @@
             <tr>
                 <th class="col-md-1">ID</th>
                 <th class="col-md-4">Name</th>
-                <th class="col-md-4">Category</th>
-                <th class="col-md-3">Available</th>
+                <th class="col-md-4">Price</th>
+                <th class="col-md-3">Image_id</th>
+                <th class="col-md-3">Description</th>
+                <th class="col-md-3">Review_List</th>
             </tr>
             </thead>
           </table>

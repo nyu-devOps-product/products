@@ -9,18 +9,20 @@ $(function () {
         $("#product_id").val(res.id);
         $("#product_name").val(res.name);
         $("#product_category").val(res.category);
+        /*
         if (res.available == true) {
             $("#product_available").val("true");
         } else {
             $("#product_available").val("false");
         }
+        */
     }
 
     /// Clears all form fields
     function clear_form_data() {
         $("#product_name").val("");
         $("#product_category").val("");
-        $("#product_available").val("");
+        // $("#product_available").val("");
     }
 
     // Updates the flash message area
@@ -36,18 +38,22 @@ $(function () {
     $("#create-btn").click(function () {
 
         var name = $("#product_name").val();
-        var category = $("#product_category").val();
-        var available = $("#product_available").val() == "true";
+        var price = $("#product_price").val();
+        var image_id = $("#product_image").val();
+        var description = $("#product_description").val();
+        var review = $("#product_review").val();
 
         var data = {
             "name": name,
-            "category": category,
-            "available": available
+            "price": price,
+            "image_id": image_id,
+            "description": description,
+            "review": review
         };
 
         var ajax = $.ajax({
             type: "POST",
-            url: "/pets",
+            url: "/products",
             contentType:"application/json",
             data: JSON.stringify(data),
         });
@@ -70,19 +76,24 @@ $(function () {
     $("#update-btn").click(function () {
 
         var product_id = $("#product_id").val();
+
         var name = $("#product_name").val();
-        var category = $("#product_category").val();
-        var available = $("#product_available").val() == "true";
+        var price = $("#product_price").val();
+        var image_id = $("#product_image").val();
+        var description = $("#product_description").val();
+        var review = $("#product_review").val();
 
         var data = {
             "name": name,
-            "category": category,
-            "available": available
+            "price": price,
+            "image_id": image_id,
+            "description": description,
+            "review": review
         };
 
         var ajax = $.ajax({
                 type: "PUT",
-                url: "/pets/" + product_id,
+                url: "/products/" + product_id,
                 contentType:"application/json",
                 data: JSON.stringify(data)
             })
@@ -108,7 +119,7 @@ $(function () {
 
         var ajax = $.ajax({
             type: "GET",
-            url: "/pets/" + product_id,
+            url: "/products/" + product_id,
             contentType:"application/json",
             data: ''
         })
@@ -136,7 +147,7 @@ $(function () {
 
         var ajax = $.ajax({
             type: "DELETE",
-            url: "/pets/" + product_id,
+            url: "/products/" + product_id,
             contentType:"application/json",
             data: '',
         })
@@ -167,32 +178,48 @@ $(function () {
     $("#search-btn").click(function () {
 
         var name = $("#product_name").val();
-        var category = $("#product_category").val();
-        var available = $("#product_available").val() == "true";
+        var price = $("#product_price").val();
+        var image_id = $("#product_image").val();
+        var description = $("#product_description").val();
+        var review_list = $("#product_review").val();
 
         var queryString = ""
 
         if (name) {
             queryString += 'name=' + name
         }
-        if (category) {
+        if (price) {
             if (queryString.length > 0) {
-                queryString += '&category=' + category
+                queryString += '&price=' + price
             } else {
-                queryString += 'category=' + category
+                queryString += 'price=' + price
             }
         }
-        if (available) {
+        if (image_id) {
             if (queryString.length > 0) {
-                queryString += '&available=' + available
+                queryString += '&image_id=' + image_id
             } else {
-                queryString += 'available=' + available
+                queryString += 'image_id=' + image_id
+            }
+        }
+        if (description) {
+            if (queryString.length > 0) {
+                queryString += '&description=' + description
+            } else {
+                queryString += 'description=' + description
+            }
+        }
+        if (review_list) {
+            if (queryString.length > 0) {
+                queryString += '&review_list=' + review_list
+            } else {
+                queryString += 'review_list=' + review_list
             }
         }
 
         var ajax = $.ajax({
             type: "GET",
-            url: "/pets?" + queryString,
+            url: "/products?" + queryString,
             contentType:"application/json",
             data: ''
         })
@@ -204,12 +231,15 @@ $(function () {
             var header = '<tr>'
             header += '<th style="width:10%">ID</th>'
             header += '<th style="width:40%">Name</th>'
-            header += '<th style="width:40%">Category</th>'
-            header += '<th style="width:10%">Available</th></tr>'
+            header += '<th style="width:40%">Price</th>'
+            header += '<th style="width:10%">Image_id</th>'
+            header += '<th style="width:40%">Description</th>'
+            header += '<th style="width:40%">Review_list</th></tr>'
             $("#search_results").append(header);
             for(var i = 0; i < res.length; i++) {
-                pet = res[i];
-                var row = "<tr><td>"+pet.id+"</td><td>"+pet.name+"</td><td>"+pet.category+"</td><td>"+pet.available+"</td></tr>";
+                product = res[i];
+                var row = "<tr><td>"+product.id+"</td><td>"+product.name+"</td><td>"+product.price+"</td><td>"+product.image_id+
+                product.description+"</td><td>"+product.review_list+"</td></tr>";
                 $("#search_results").append(row);
             }
 
