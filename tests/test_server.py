@@ -57,8 +57,7 @@ class TestProductServer(unittest.TestCase):
         """ Test the Home Page """
         resp = self.app.get('/')
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        data = json.loads(resp.data)
-        self.assertEqual(data['name'], 'Products REST API Service')
+        self.assertIn('Product RESTful Service', resp.data)
 
     def test_get_product_list(self):
         """ Get a list of products """

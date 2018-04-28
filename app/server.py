@@ -69,12 +69,24 @@ def internal_server_error(error):
 ######################################################################
 # GET INDEX
 ######################################################################
+# @app.route('/')
+# def index():
+#     """ Return some message of our API by default """
+#     return jsonify(name='Products REST API Service',
+#                    version='1.0',
+#                    url=url_for('list_products', _external=True)), HTTP_200_OK
+
+
+######################################################################
+# GET INDEX
+######################################################################
 @app.route('/')
 def index():
-    """ Return some message of our API by default """
-    return jsonify(name='Products REST API Service',
-                   version='1.0',
-                   url=url_for('list_products', _external=True)), HTTP_200_OK
+    # data = '{name: <string>, category: <string>}'
+    # url = request.base_url + 'pets' # url_for('list_pets')
+    # return jsonify(name='Pet Demo REST API Service', version='1.0', url=url,
+    # data=data), status.HTTP_200_OK
+    return app.send_static_file('index.html')
 
 
 ######################################################################
