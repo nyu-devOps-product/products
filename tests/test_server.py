@@ -24,8 +24,8 @@ import logging
 import unittest
 import json
 from flask_api import status    # HTTP Status Codes
-from models import Product, Review
-import server
+from app.models import Product, Review
+from app import server
 
 ######################################################################
 #  T E S T   C A S E S
@@ -171,27 +171,32 @@ class TestProductServer(unittest.TestCase):
 
     def test_add_product_review(self):
         """ Review product """
-        new_review = {"username": "Grumpy Grumperson", "score": 1, "detail": "Can't stand it"}
+        new_review = {"username": "Grumpy Grumperson",
+                      "score": 1, "detail": "Can't stand it"}
         data = json.dumps(new_review)
-        resp = self.app.put("products/0/review", data=data, content_type='application/json')
+        resp = self.app.put("products/0/review", data=data,
+                            content_type='application/json')
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         resp = self.app.get('/products/0', content_type='application/json')
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         new_json = json.loads(resp.data)
-        self.assertEqual(new_json['review_list'][-1]['username'], 'Grumpy Grumperson')
+        self.assertEqual(new_json['review_list'][-1]
+                         ['username'], 'Grumpy Grumperson')
 
     def test_add_product_review_with_bad_attributes(self):
         """ Review product with bad attributes """
         new_review = {"badattribute1": "Grumpy Grumperson", "badattribute2": 1}
         data = json.dumps(new_review)
-        resp = self.app.put("products/0/review", data=data, content_type='application/json')
+        resp = self.app.put("products/0/review", data=data,
+                            content_type='application/json')
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_add_inexistent_product_review(self):
         """ Review inexistent product """
         new_review = {"username": "Grumpy Grumperson", "score": 1}
         data = json.dumps(new_review)
-        resp = self.app.put("products/2/review", data=data, content_type='application/json')
+        resp = self.app.put("products/2/review", data=data,
+                            content_type='application/json')
         self.assertEquals(resp.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_delete_product(self):

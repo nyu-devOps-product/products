@@ -13,7 +13,7 @@ import os
 import sys
 import logging
 from flask import Flask, jsonify, request, url_for, make_response, abort
-from models import Product, DataValidationError, Review
+from app.models import Product, DataValidationError, Review
 
 # Pull options from environment
 DEBUG = (os.getenv('DEBUG', 'False') == 'True')
@@ -103,22 +103,26 @@ def list_products():
     products = results
     sort_type = request.args.get('sort')
     if sort_type == 'price':
-        # Retrieves a list of products with the lowest price showed first from the database
+        # Retrieves a list of products with the lowest price showed first from
+        # the database
         results = sorted(products, key=lambda p: float(
             p.get_price()), reverse=False)
     elif sort_type == 'price-':
-        # Retrieves a list of products with the highest price showed first from the database
+        # Retrieves a list of products with the highest price showed first from
+        # the database
         results = sorted(products, key=lambda p: float(
             p.get_price()), reverse=True)
     elif sort_type == 'review':
-        # Retrieves a list of products with the highest review showed first from the database
+        # Retrieves a list of products with the highest review showed first
+        # from the database
         results = sorted(products, key=lambda p: p.avg_score(), reverse=True)
     elif sort_type == 'name':
         # Retrieves a list of products in alphabetical order from the database
         results = sorted(
             products, key=lambda p: p.get_name().lower(), reverse=False)
     elif sort_type == 'name-':
-        # Retrieves a list of products in reverse alphabetical order from the database
+        # Retrieves a list of products in reverse alphabetical order from the
+        # database
         results = sorted(
             products, key=lambda p: p.get_name().lower(), reverse=True)
 #    else:

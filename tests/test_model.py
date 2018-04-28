@@ -20,7 +20,7 @@ Test cases can be run with:
 """
 
 import unittest
-from models import Product, DataValidationError, Review
+from app.models import Product, DataValidationError, Review
 
 ######################################################################
 #  T E S T   C A S E S
