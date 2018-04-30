@@ -13,5 +13,55 @@ Background:
 
 Scenario: The server is running
     When I visit the "Home Page"
-    Then I should see "Pet Demo RESTful Service" in the title
+    Then I should see "Product RESTful Service" in the title
     And I should not see "404 Not Found"
+
+Scenario: List all products
+    When I visit the "Home Page"
+    And I press the "Search" button
+    Then I should see "iPhone" in the results
+    And I should see "Samsung" in the results
+    And I should see "Speaker" in the results
+
+Scenario: Read a product
+    When I visit the "Home Page"
+    And I change "Id" to "3"
+    And I press the "Retrieve" button
+    Then I should see "Speaker" in the "Name" field
+
+Scenario: Create a product
+    When I visit the "Home Page"
+    And I change "Name" to "HDTV"
+    And I change "Price" to "449"
+    And I press the "Create" button
+    Then I should see the message "Success"
+    When I press the "Search" button
+    Then I should see "HDTV" in the results
+
+Scenario: Update a product
+    When I visit the "Home Page"
+    And I change "Id" to "1"
+    And I press the "Retrieve" button
+    Then I should see "iPhone" in the "Name" field
+    When I change "Name" to "Apple phone 8"
+    And I press the "Update" button
+    Then I should see the message "Success"
+    When I change "Id" to "1"
+    And I press the "Retrieve" button
+    Then I should see "Apple phone 8" in the "Name" field
+    When I press the "Clear" button
+    And I press the "Search" button
+    Then I should see "Apple phone 8" in the results
+    And I should not see "iPhone" in the results
+
+Scenario: Delete a product
+    When I visit the "Home Page"
+    And I change "Id" to "3"
+    And I press the "Retrieve" button
+    Then I should see "Speaker" in the "Name" field
+    When I press the "Delete" button
+    Then I should see the message "Product with ID [3] has been Deleted!"
+    When I press the "Search" button
+    Then I should see "iPhone" in the results
+    And I should see "Samsung" in the results
+    And I should not see "Speaker" in the results
