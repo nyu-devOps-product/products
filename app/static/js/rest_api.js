@@ -8,21 +8,20 @@ $(function () {
     function update_form_data(res) {
         $("#product_id").val(res.id);
         $("#product_name").val(res.name);
-        $("#product_category").val(res.category);
-        /*
-        if (res.available == true) {
-            $("#product_available").val("true");
-        } else {
-            $("#product_available").val("false");
-        }
-        */
+        $("#product_price").val(res.price);
+        $("#product_image").val(res.image_id);
+        $("#product_description").val(res.description);
+        $("#product_review").val(res.review_list);
     }
 
     /// Clears all form fields
     function clear_form_data() {
+        $("#product_id").val("");
         $("#product_name").val("");
-        $("#product_category").val("");
-        // $("#product_available").val("");
+        $("#product_price").val("");
+        $("#product_image").val("");
+        $("#product_description").val("");
+        $("#product_review").val("");
     }
 
     // Updates the flash message area
@@ -48,7 +47,7 @@ $(function () {
             "price": price,
             "image_id": image_id,
             "description": description,
-            "review": review
+            "review_list": review
         };
 
         var ajax = $.ajax({
@@ -153,8 +152,8 @@ $(function () {
         })
 
         ajax.done(function(res){
-            clear_form_data()
-            flash_message("Product with ID [" + res.id + "] has been Deleted!")
+            clear_form_data();
+            flash_message("Product with ID [" + res.id + "] has been Deleted!");
         });
 
         ajax.fail(function(res){
@@ -167,8 +166,7 @@ $(function () {
     // ****************************************
 
     $("#clear-btn").click(function () {
-        $("#product_id").val("");
-        clear_form_data()
+        clear_form_data();
     });
 
     // ****************************************
@@ -176,14 +174,13 @@ $(function () {
     // ****************************************
 
     $("#search-btn").click(function () {
-
         var name = $("#product_name").val();
         var price = $("#product_price").val();
         var image_id = $("#product_image").val();
         var description = $("#product_description").val();
         var review_list = $("#product_review").val();
 
-        var queryString = ""
+        var queryString = "";
 
         if (name) {
             queryString += 'name=' + name
@@ -230,11 +227,11 @@ $(function () {
             $("#search_results").append('<table class="table-striped">');
             var header = '<tr>'
             header += '<th style="width:10%">ID</th>'
-            header += '<th style="width:40%">Name</th>'
-            header += '<th style="width:40%">Price</th>'
+            header += '<th style="width:20%">Name</th>'
+            header += '<th style="width:20%">Price</th>'
             header += '<th style="width:10%">Image_id</th>'
-            header += '<th style="width:40%">Description</th>'
-            header += '<th style="width:40%">Review_list</th></tr>'
+            header += '<th style="width:20%">Description</th>'
+            header += '<th style="width:20%">Review_list</th></tr>'
             $("#search_results").append(header);
             for(var i = 0; i < res.length; i++) {
                 product = res[i];
@@ -245,11 +242,11 @@ $(function () {
 
             $("#search_results").append('</table>');
 
-            flash_message("Success")
+            flash_message("Success");
         });
 
         ajax.fail(function(res){
-            flash_message(res.responseJSON.message)
+            flash_message(res.responseJSON.message);
         });
 
     });

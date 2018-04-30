@@ -9,18 +9,19 @@ PUT   /products/{id} - Updates a product in the database fom the posted database
 DELETE /products/{id} - Removes a product from the database that matches the id
 """
 
-import os
 import sys
 import logging
 from flask import Flask, jsonify, request, url_for, make_response, abort
+from flask_api import status    # HTTP Status Codes
+from werkzeug.exceptions import NotFound
 from app.models import Product, DataValidationError, Review
-
+from . import app
 # Pull options from environment
-DEBUG = (os.getenv('DEBUG', 'False') == 'True')
-PORT = os.getenv('PORT', '5000')
+# DEBUG = (os.getenv('DEBUG', 'False') == 'True')
+# PORT = os.getenv('PORT', '5000')
 
 # Create Flask application
-app = Flask(__name__)
+# app = Flask(__name__)
 
 # Status Codes
 HTTP_200_OK = 200
@@ -34,41 +35,23 @@ HTTP_409_CONFLICT = 409
 ######################################################################
 # Error Handlers
 ######################################################################
-@app.errorhandler(DataValidationError)
-def request_validation_error(error):
-    """ Handles all data validation issues from the model """
-    return bad_request(error)
+import error_handlers
+
+######################################################################
+# GET HEALTH CHECK
+######################################################################
 
 
-@app.errorhandler(400)
-def bad_request(error):
-    """ Handles requests that have bad or malformed data """
-    return jsonify(status=400, error='Bad Request', message=error.message), 400
-
-
-@app.errorhandler(404)
-def not_found(error):
-    """ Handles products that cannot be found """
-    return jsonify(status=404, error='Not Found', message=error.message), 404
-
-
-@app.errorhandler(405)
-def method_not_supported(error):
-    """ Handles bad method calls """
-    return jsonify(status=405, error='Method not Allowed',
-                   message='Your request method is not supported.'
-                           ' Check your HTTP method and try again.'), 405
-
-
-@app.errorhandler(500)
-def internal_server_error(error):
-    """ Handles catostrophic errors """
-    return jsonify(status=500, error='Internal Server Error', message=error.message), 500
-
+@app.route('/healthcheck')
+def healthcheck():
+    """ Let them know our heart is still beating """
+    return make_response(jsonify(status=200, message='Healthy'), status.HTTP_200_OK)
 
 ######################################################################
 # GET INDEX
 ######################################################################
+
+
 @app.route('/')
 def index():
     # data = '{name: <string>, category: <string>}'
@@ -244,23 +227,23 @@ def initialize_logging(log_level=logging.INFO):
 ######################################################################
 #   M A I N
 ######################################################################
-if __name__ == "__main__":
-    print "*********************************"
-    print " P R O D U C T   S H O P   S E R V I C E "
-    print "*********************************"
-    initialize_logging()
-    phone_review_list = [Review(username="applefan", score="4", detail="OK"),
-                         Review(username="helloworld",
-                                score="4", detail="As expected"),
-                         Review(username="pythonfan", score="3", detail="So So")]
-    pc_review_list = [Review(username="applelover", score="5", detail="Excellent"),
-                      Review(username="tvfan", score="5",
-                             detail="Loving this!!"),
-                      Review(username="devops team member",
-                             score="5", detail="Highly recommend!"),
-                      Review(username="nyu", score="5", detail="Nice!")]
-    Product.catalog.save(
-        Product("iPhone 8", 649, 0, review_list=phone_review_list))
-    Product.catalog.save(
-        Product("MacBook Pro", 1799, 1, review_list=pc_review_list))
-    app.run(host='0.0.0.0', port=int(PORT), debug=DEBUG)
+# if __name__ == "__main__":
+#     print "*********************************"
+#     print " P R O D U C T   S H O P   S E R V I C E "
+#     print "*********************************"
+#     initialize_logging()
+#     phone_review_list = [Review(username="applefan", score="4", detail="OK"),
+#                          Review(username="helloworld",
+#                                 score="4", detail="As expected"),
+#                          Review(username="pythonfan", score="3", detail="So So")]
+#     pc_review_list = [Review(username="applelover", score="5", detail="Excellent"),
+#                       Review(username="tvfan", score="5",
+#                              detail="Loving this!!"),
+#                       Review(username="devops team member",
+#                              score="5", detail="Highly recommend!"),
+#                       Review(username="nyu", score="5", detail="Nice!")]
+#     Product.catalog.save(
+#         Product("iPhone 8", 649, 0, review_list=phone_review_list))
+#     Product.catalog.save(
+#         Product("MacBook Pro", 1799, 1, review_list=pc_review_list))
+#     app.run(host='0.0.0.0', port=int(PORT), debug=DEBUG)
