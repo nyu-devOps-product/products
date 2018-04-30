@@ -57,9 +57,7 @@ def step_impl(context):
 @then(u'I should see "{message}" in the title')
 def step_impl(context, message):
     """ Check the document title for a message """
-    print(context.driver.title)
-    # TO DO -- implement UI then replace empty string with message
-    expect(context.driver.title).to_contain("")#(message)
+    expect(context.driver.title).to_contain(message)#(message)
 
 @then(u'I should not see "{message}"')
 def step_impl(context, message):
