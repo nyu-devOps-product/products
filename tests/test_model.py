@@ -20,7 +20,7 @@ Test cases can be run with:
 """
 
 import unittest
-from models import Product, DataValidationError, Review
+from app.models import Product, DataValidationError, Review
 
 ######################################################################
 #  T E S T   C A S E S
@@ -129,10 +129,12 @@ class TestProducts(unittest.TestCase):
 
     def test_deserialize_without_required_fields(self):
         """ Deserialize a product without all required fields """
-        # Should fail deserializing a product with missing name (required attribute):
+        # Should fail deserializing a product with missing name (required
+        # attribute):
         data = {"price": "649", "id": "0"}
         self.assertRaises(DataValidationError, self.product.deserialize, data)
-        # Should fail deserializing a product with missing price (required attribute):
+        # Should fail deserializing a product with missing price (required
+        # attribute):
         data = {"name": "iPhone", "id": "0"}
         self.assertRaises(DataValidationError, self.product.deserialize, data)
         # Should successfully deserialize product with all required fields:
@@ -198,7 +200,7 @@ class TestProducts(unittest.TestCase):
                              Review(username="pythonfan", score="3", detail="So So")]
         watch = Product(name="I Watch", price=329, id="2",
                         image_id="001", review_list=watch_review_list)
-        avg_score = float(4+4+3)/3
+        avg_score = float(4 + 4 + 3) / 3
         watch.set_review_list(watch_review_list)
         Product.catalog.save(watch)
         w = Product.catalog.find(2)
@@ -215,5 +217,5 @@ class TestProducts(unittest.TestCase):
 ######################################################################
 if __name__ == '__main__':
     unittest.main()
-    # suite = unittest.TestLoader().loadTestsFromTestCase(TestPets)
+    # suite = unittest.TestLoader().loadTestsFromTestCase(TestProducts)
     # unittest.TextTestRunner(verbosity=2).run(suite)
