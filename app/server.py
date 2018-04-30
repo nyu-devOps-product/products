@@ -162,6 +162,8 @@ def update_products(id):
     product = Product.catalog.find(id)
     if product:
         payload = request.get_json()
+        if ('name' not in payload or 'price' not in payload):
+            abort(400)
         product.deserialize(payload)
         product.catalog.save(product)
         message = product.serialize()
