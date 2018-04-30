@@ -11,7 +11,7 @@ $(function () {
         $("#product_price").val(res.price);
         $("#product_image").val(res.image_id);
         $("#product_description").val(res.description);
-        $("#product_review").val(res.review_list);
+        // $("#product_review").val(res.review_list);
     }
 
     /// Clears all form fields
@@ -21,7 +21,7 @@ $(function () {
         $("#product_price").val("");
         $("#product_image").val("");
         $("#product_description").val("");
-        $("#product_review").val("");
+        // $("#product_review").val("");
     }
 
     // Updates the flash message area
@@ -40,14 +40,14 @@ $(function () {
         var price = $("#product_price").val();
         var image_id = $("#product_image").val();
         var description = $("#product_description").val();
-        var review = $("#product_review").val();
+        // var review = $("#product_review").val();
 
         var data = {
             "name": name,
             "price": price,
             "image_id": image_id,
-            "description": description,
-            "review_list": review
+            "description": description
+            // "review_list": review
         };
 
         var ajax = $.ajax({
@@ -80,14 +80,14 @@ $(function () {
         var price = $("#product_price").val();
         var image_id = $("#product_image").val();
         var description = $("#product_description").val();
-        var review = $("#product_review").val();
+        // var review = $("#product_review").val();
 
         var data = {
             "name": name,
             "price": price,
             "image_id": image_id,
-            "description": description,
-            "review": review
+            "description": description
+            // "review_list": review
         };
 
         var ajax = $.ajax({
@@ -153,7 +153,7 @@ $(function () {
 
         ajax.done(function(res){
             clear_form_data();
-            flash_message("Product with ID [" + res.id + "] has been Deleted!");
+            flash_message("Product with ID [" + product_id + "] has been Deleted!");
         });
 
         ajax.fail(function(res){
@@ -178,7 +178,7 @@ $(function () {
         var price = $("#product_price").val();
         var image_id = $("#product_image").val();
         var description = $("#product_description").val();
-        var review_list = $("#product_review").val();
+        // var review_list = $("#product_review").val();
 
         var queryString = "";
 
@@ -206,13 +206,13 @@ $(function () {
                 queryString += 'description=' + description
             }
         }
-        if (review_list) {
-            if (queryString.length > 0) {
-                queryString += '&review_list=' + review_list
-            } else {
-                queryString += 'review_list=' + review_list
-            }
-        }
+        // if (review_list) {
+        //     if (queryString.length > 0) {
+        //         queryString += '&review_list=' + review_list
+        //     } else {
+        //         queryString += 'review_list=' + review_list
+        //     }
+        // }
 
         var ajax = $.ajax({
             type: "GET",
@@ -231,12 +231,13 @@ $(function () {
             header += '<th style="width:20%">Price</th>'
             header += '<th style="width:10%">Image_id</th>'
             header += '<th style="width:20%">Description</th>'
-            header += '<th style="width:20%">Review_list</th></tr>'
+            // header += '<th style="width:20%">Review_list</th></tr>'
             $("#search_results").append(header);
             for(var i = 0; i < res.length; i++) {
                 product = res[i];
                 var row = "<tr><td>"+product.id+"</td><td>"+product.name+"</td><td>"+product.price+"</td><td>"+product.image_id+
-                product.description+"</td><td>"+product.review_list+"</td></tr>";
+                product.description+"</td><td>";
+                // +product.review_list+"</td></tr>";
                 $("#search_results").append(row);
             }
 
