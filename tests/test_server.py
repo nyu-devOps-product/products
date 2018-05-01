@@ -216,7 +216,7 @@ class TestProductServer(unittest.TestCase):
 
     def test_query_one_product(self):
         """ Get one product with keyword """
-        resp = self.app.get('/products', query_string='keyword=iPhone')
+        resp = self.app.get('/products', query_string='name=iPhone')
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         self.assertTrue(len(resp.data) > 0)
         self.assertTrue('iPhone 8' in resp.data)
