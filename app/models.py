@@ -21,6 +21,7 @@ class Catalog(object):
     """
     Class that represents a Catalog
     """
+
     def __init__(self):
         self.data = []
         self.index = -1
@@ -67,18 +68,24 @@ class Catalog(object):
         if product:
             self.data.remove(product)
 
-    def query(self, keyword):
+    def query(self, keyword, value):
         """ Find Products by keyword """
         found = []
-        pattern = r'.*?{0}.*?'.format(keyword)
+        pattern = r'.*?{0}.*?'.format(value)
+        # for product in self.all():
+        #     fields = product.serialize()
+        #     for ele in fields:
+        #         if ele is not "review_list":
+        #             match = re.search(pattern, str(fields[ele]))
+        #             if match:
+        #                 found.append(product)
+        #                 break
         for product in self.all():
             fields = product.serialize()
-            for ele in fields:
-                if ele is not "review_list":
-                    match = re.search(pattern, str(fields[ele]))
-                    if match:
-                        found.append(product)
-                        break
+            match = re.search(pattern, str(fields[keyword]))
+            if match:
+                found.append(product)
+
         return found
 
     def remove_all(self):

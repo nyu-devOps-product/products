@@ -227,17 +227,16 @@ $(function () {
             $("#search_results").append('<table class="table-striped">');
             var header = '<tr>'
             header += '<th style="width:10%">ID</th>'
-            header += '<th style="width:20%">Name</th>'
-            header += '<th style="width:20%">Price</th>'
+            header += '<th style="width:10%">Name</th>'
+            header += '<th style="width:10%">Price</th>'
             header += '<th style="width:10%">Image_id</th>'
             header += '<th style="width:20%">Description</th>'
-            // header += '<th style="width:20%">Review_list</th></tr>'
+            header += '<th style="width:20%">Review_list</th></tr>'
             $("#search_results").append(header);
             for(var i = 0; i < res.length; i++) {
                 product = res[i];
                 var row = "<tr><td>"+product.id+"</td><td>"+product.name+"</td><td>"+product.price+"</td><td>"+product.image_id+
-                product.description+"</td><td>";
-                // +product.review_list+"</td></tr>";
+                "</td><td>"+product.description+"</td><td>"+product.review_list+"</td></tr>";
                 $("#search_results").append(row);
             }
 
