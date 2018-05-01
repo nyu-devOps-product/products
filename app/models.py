@@ -72,14 +72,6 @@ class Catalog(object):
         """ Find Products by keyword """
         found = []
         pattern = r'.*?{0}.*?'.format(value)
-        # for product in self.all():
-        #     fields = product.serialize()
-        #     for ele in fields:
-        #         if ele is not "review_list":
-        #             match = re.search(pattern, str(fields[ele]))
-        #             if match:
-        #                 found.append(product)
-        #                 break
         for product in self.all():
             fields = product.serialize()
             match = re.search(pattern, str(fields[keyword]))

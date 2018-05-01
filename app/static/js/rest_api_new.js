@@ -22,6 +22,7 @@ $(function () {
         $("#product_image").val("");
         $("#product_description").val("");
         // $("#product_review").val("");
+        $("#product_sort").val("");
     }
 
     // Updates the flash message area
@@ -179,6 +180,7 @@ $(function () {
         var image_id = $("#product_image").val();
         var description = $("#product_description").val();
         // var review_list = $("#product_review").val();
+        var sort = $("#product_sort").val();
 
         var queryString = "";
 
@@ -213,6 +215,13 @@ $(function () {
         //         queryString += 'review_list=' + review_list
         //     }
         // }
+        if (sort) {
+            if (queryString.length > 0) {
+                queryString += '&sort=' + sort
+            } else {
+                queryString += 'sort=' + sort
+            }
+        }
 
         var ajax = $.ajax({
             type: "GET",
