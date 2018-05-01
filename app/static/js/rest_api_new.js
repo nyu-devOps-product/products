@@ -43,6 +43,16 @@ $(function () {
         var description = $("#product_description").val();
         // var review = $("#product_review").val();
 
+        if(name == null || name == undefined || name.length <= 0) {
+          flash_message("Name attribute cannot be empty")
+          return
+        }
+
+        if(price == null || price == undefined || price.length <= 0) {
+          flash_message("Price attribute cannot be empty")
+          return
+        }
+
         var data = {
             "name": name,
             "price": price,
@@ -175,10 +185,10 @@ $(function () {
     // ****************************************
 
     $("#search-btn").click(function () {
-        var name = $("#product_name").val();
-        var price = $("#product_price").val();
-        var image_id = $("#product_image").val();
-        var description = $("#product_description").val();
+        var name = $("#product_name").val().trim().toLowerCase();
+        var price = $("#product_price").val().trim().toLowerCase();
+        var image_id = $("#product_image").val().trim().toLowerCase();
+        var description = $("#product_description").val().trim().toLowerCase();
         // var review_list = $("#product_review").val();
         var sort = $("#product_sort").val();
 

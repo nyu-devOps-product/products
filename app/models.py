@@ -74,7 +74,7 @@ class Catalog(object):
         pattern = r'.*?{0}.*?'.format(value)
         for product in self.all():
             fields = product.serialize()
-            match = re.search(pattern, str(fields[keyword]))
+            match = re.search(pattern, str(fields[keyword]).lower())
             if match:
                 found.append(product)
 
