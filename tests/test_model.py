@@ -23,11 +23,11 @@ import unittest
 import os
 from unittest.mock import patch
 from redis import Redis
+from redis.exceptions import ConnectionError
 import json
 from app.models import Product, DataValidationError, Review
 
-
-# could be used to connect to the Redis server on Bluemix
+# For testing "vcap", it could be used to connect to the Redis server on Bluemix
 # now it is set to the Travis CI localhost
 VCAP_SERVICES = {
     'rediscloud': [
@@ -35,16 +35,15 @@ VCAP_SERVICES = {
             'password': '',
             'hostname': '127.0.0.1',
             'port': '6379'
-            }
+        }
         }
     ]
 }
 
+
 ######################################################################
 #  T E S T   C A S E S
 ######################################################################
-
-
 class TestProducts(unittest.TestCase):
     """ Test Cases for Products """
 
@@ -254,7 +253,6 @@ class TestProducts(unittest.TestCase):
         ping_error_mock.side_effect = ConnectionError()
         self.assertRaises(ConnectionError, Product.catalog.init_db)
         self.assertIsNone(Product.catalog.redis)
-
 
 
 ######################################################################
