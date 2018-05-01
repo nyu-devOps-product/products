@@ -12,6 +12,7 @@ DELETE /products/{id} - Removes a product from the database that matches the id
 import os
 import sys
 import logging
+from flasgger import Swagger
 from flask import Flask, jsonify, request, url_for, make_response, abort
 from models import Product, DataValidationError, Review
 
@@ -21,6 +22,23 @@ PORT = os.getenv('PORT', '5000')
 
 # Create Flask application
 app = Flask(__name__)
+
+# Configure Swagger before initilaizing it
+app.config['SWAGGER'] = {
+    "swagger_version": "2.0",
+    "specs": [
+        {
+            "version": "1.0.0",
+            "title": "DevOps Swagger Pet App",
+            "description": "This is a sample server Petstore server.",
+            "endpoint": 'v1_spec',
+            "route": '/v1/spec'
+        }
+    ]
+}
+
+# Initialize Swagger after configuring it
+Swagger(app)
 
 # Status Codes
 HTTP_200_OK = 200
@@ -74,6 +92,7 @@ def index():
     """ Return some message of our API by default """
     return jsonify(name='Products REST API Service',
                    version='1.0',
+                   docs=request.base_url + 'apidocs/index.html',
                    url=url_for('list_products', _external=True)), HTTP_200_OK
 
 
@@ -82,7 +101,22 @@ def index():
 ######################################################################
 @app.route('/products/<int:id>', methods=['DELETE'])
 def delete_products(id):
-    """ Removes a Product from the database that matches the id """
+    """ Removes a Product from the database that matches the id
+    This endpoint will delete a Product based the id specified in the path
+    ---
+    tags:
+      - Products
+    description: Deletes a Product from the database
+    parameters:
+      - name: id
+        in: path
+        description: ID of product to delete
+        type: integer
+        required: true
+    responses:
+      204:
+        description: Product deleted
+    """
     Product.catalog.delete(id)
 
     return make_response('', HTTP_204_NO_CONTENT)
@@ -93,7 +127,46 @@ def delete_products(id):
 ######################################################################
 @app.route('/products', methods=['GET'])
 def list_products():
-    """ Retrieves a list of products from the database """
+    """ 
+    Retrieves a list of products from the database
+    This endpoint will return all Pets unless a query parameter is specificed
+    ---
+    tags:
+      - Products
+    description: The Products endpoint allows you to query Products
+    parameters:
+      - name: category
+        in: query
+        description: the category of Product you are looking for
+        required: false
+        type: string
+      - name: name
+        in: query
+        description: the name of Product you are looking for
+        required: false
+        type: string
+    definitions:
+      Product:
+        type: object
+        properties:
+          id:
+            type: integer
+            description: unique id assigned internallt by service
+          name:
+            type: string
+            description: the products's name
+          category:
+            type: string
+            description: the category of product (e.g., iphone, tc, etc.)
+    responses:
+      200:
+        description: An array of Products
+        schema:
+          type: array
+          items:
+            schema:
+              $ref: '#/definitions/Product'
+    """
     results = []
     keyword = request.args.get('keyword')
     if keyword:
@@ -132,7 +205,39 @@ def list_products():
 ######################################################################
 @app.route('/products/<int:id>', methods=['GET'])
 def get_products(id):
-    """ Retrieves a Product with a specific id """
+    """ Retrieves a Product with a specific id
+    This endpoint will create a Product based the data in the body that is posted
+    ---
+    tags:
+      - Products
+    consumes:
+      - application/json
+    produces:
+      - application/json
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          id: data
+          required:
+            - name
+            - category
+          properties:
+            name:
+              type: string
+              description: name for the Product
+            category:
+              type: string
+              description: the category of product (iphone, tv, etc.)
+    responses:
+      201:
+        description: Product created
+        schema:
+          $ref: '#/definitions/Product'
+      400:
+        description: Bad Request (the posted data was not valid)
+    """
     product = Product.catalog.find(id)
     if product:
         message = product.serialize()
@@ -149,7 +254,39 @@ def get_products(id):
 ######################################################################
 @app.route('/products', methods=['POST'])
 def create_product():
-    """ Creates a product and saves it """
+    """ Creates a product and saves it
+    This endpoint will create a Product based the data in the body that is posted
+    ---
+    tags:
+      - Products
+    consumes:
+      - application/json
+    produces:
+      - application/json
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          id: data
+          required:
+            - name
+            - category
+          properties:
+            name:
+              type: string
+              description: name for the Product
+            category:
+              type: string
+              description: the category of product (iphone, tv, etc.)
+    responses:
+      201:
+        description: Product created
+        schema:
+          $ref: '#/definitions/Product'
+      400:
+        description: Bad Request (the posted data was not valid)
+    """
     payload = request.get_json()
     # Ensure that required attributes are provided:
     if ('name' not in payload or 'price' not in payload):
@@ -170,7 +307,43 @@ def create_product():
 ######################################################################
 @app.route('/products/<int:id>', methods=['PUT'])
 def update_products(id):
-    """ Updates a product in the catalog """
+    """ Updates a product in the catalog
+    This endpoint will update a Product based the body that is posted
+    ---
+    tags:
+      - Products
+    consumes:
+      - application/json
+    produces:
+      - application/json
+    parameters:
+      - name: id
+        in: path
+        description: ID of product to retrieve
+        type: integer
+        required: true
+      - in: body
+        name: body
+        schema:
+          id: data
+          required:
+            - name
+            - category
+          properties:
+            name:
+              type: string
+              description: name for the Product
+            category:
+              type: string
+              description: the category of product (iphone, tv, etc.)
+    responses:
+      200:
+        description: Pet Updated
+        schema:
+          $ref: '#/definitions/Product'
+      400:
+        description: Bad Request (the posted data was not valid)
+    """
     product = Product.catalog.find(id)
     if product:
         payload = request.get_json()
