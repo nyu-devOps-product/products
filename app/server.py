@@ -1,18 +1,31 @@
-import os
+"""
+This service is written with Python Flask
+Paths
+-----
+GET   /products - Retrieves a list of product from the database
+GET   /products/{id} - Retrirves a product with a specific id
+POST  /products - Creates a product in the datbase from the posted database
+PUT   /products/{id} - Updates a product in the database fom the posted database
+DELETE /products/{id} - Removes a product from the database that matches the id
+"""
+
 import sys
 import logging
 from functools import wraps
-
-from flask import Flask, Response, jsonify, request, json, url_for, make_response, abort
-from models import Product, DataValidationError, Review
+from flask import Flask, jsonify, request, url_for, make_response, abort
+from flask_api import status    # HTTP Status Codes
+from werkzeug.exceptions import NotFound
+from app.models import Product, DataValidationError, Review
+from . import app
 
 # Pull options from environment
-DEBUG = (os.getenv('DEBUG', 'False') == 'True')
-PORT = os.getenv('PORT', '5000')
+# DEBUG = (os.getenv('DEBUG', 'False') == 'True')
+# PORT = os.getenv('PORT', '5000')
 
 # Create Flask application
 app = Flask(__name__)
 app.config['LOGGING_LEVEL'] = logging.INFO
+
 
 # Status Codes
 HTTP_200_OK = 200
@@ -27,65 +40,17 @@ HTTP_415_UNSUPPORTED_MEDIA_TYPE = 415
 ######################################################################
 # Error Handlers
 ######################################################################
-@app.errorhandler(DataValidationError)
-def request_validation_error(error):
-    """ Handles all data validation issues from the model """
-    return bad_request(error)
-
-
-@app.errorhandler(400)
-def bad_request(error):
-    """ Handles requests that have bad or malformed data """
-    return jsonify(status=400, error='Bad Request', message=error.message), 400
-
-
-@app.errorhandler(404)
-def not_found(error):
-    """ Handles products that cannot be found """
-    return jsonify(status=404, error='Not Found', message=error.message), 404
-
-
-@app.errorhandler(405)
-def method_not_supported(error):
-    """ Handles bad method calls """
-    return jsonify(status=405, error='Method not Allowed',
-                   message='Your request method is not supported.' \
-                           ' Check your HTTP method and try again.'), 405
-
-
-@app.errorhandler(415)
-def mediatype_not_supported(error):
-    """ Handles unsuppoted media requests with 415_UNSUPPORTED_MEDIA_TYPE """
-    message = error.message or str(error)
-    app.logger.info(message)
-    return jsonify(status=415, error='Unsupported media type', message=message), 415
-
-
-@app.errorhandler(500)
-def internal_server_error(error):
-    """ Handles catostrophic errors """
-    return jsonify(status=500, error='Internal Server Error', message=error.message), 500
-
+import error_handlers
 
 ######################################################################
-# DECORATORS
+# GET HEALTH CHECK
 ######################################################################
-def requires_content_type(*content_types):
-    """ Use this decorator to check content type """
-    def decorator(func):
-        """ Inner decorator """
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            """ Checks that the content type is correct """
-            for content_type in content_types:
-                if request.headers['Content-Type'] == content_type:
-                    return func(*args, **kwargs)
 
-            app.logger.error('Invalid Content-Type: %s', request.headers['Content-Type'])
-            abort(HTTP_415_UNSUPPORTED_MEDIA_TYPE,
-                  'Content-Type must be {}'.format(content_types))
-        return wrapper
-    return decorator
+
+@app.route('/healthcheck')
+def healthcheck():
+    """ Let them know our heart is still beating """
+    return make_response(jsonify(status=200, message='Healthy'), status.HTTP_200_OK)
 
 
 ######################################################################
@@ -93,10 +58,22 @@ def requires_content_type(*content_types):
 ######################################################################
 @app.route('/')
 def index():
-    """ Return some message of our API by default """
-    return jsonify(name='Products REST API Service',
-                   version='1.0',
-                   url=url_for('list_products', _external=True)), HTTP_200_OK
+    # data = '{name: <string>, category: <string>}'
+    # url = request.base_url + 'pets' # url_for('list_pets')
+    # return jsonify(name='Pet Demo REST API Service', version='1.0', url=url,
+    # data=data), status.HTTP_200_OK
+    return app.send_static_file('index.html')
+
+
+######################################################################
+# DELETE A PRODUCT
+######################################################################
+@app.route('/products/<int:id>', methods=['DELETE'])
+def delete_products(id):
+    """ Removes a Product from the database that matches the id """
+    Product.catalog.delete(id)
+
+    return make_response('', HTTP_204_NO_CONTENT)
 
 
 ######################################################################
@@ -143,6 +120,26 @@ def get_products(id):
         abort(HTTP_404_NOT_FOUND, "Product with id '{}' was not found.".format(id))
 
     return make_response(jsonify(product.serialize()), HTTP_200_OK)
+
+######################################################################
+# DECORATORS
+######################################################################
+def requires_content_type(*content_types):
+    """ Use this decorator to check content type """
+    def decorator(func):
+        """ Inner decorator """
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            """ Checks that the content type is correct """
+            for content_type in content_types:
+                if request.headers['Content-Type'] == content_type:
+                    return func(*args, **kwargs)
+
+            app.logger.error('Invalid Content-Type: %s', request.headers['Content-Type'])
+            abort(HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+                  'Content-Type must be {}'.format(content_types))
+        return wrapper
+    return decorator
 
 
 ######################################################################
@@ -196,15 +193,33 @@ def update_products(id):
     return make_response(jsonify(product.serialize()), HTTP_200_OK)
 
 
-######################################################################
-# DELETE A PRODUCT
-######################################################################
-@app.route('/products/<int:id>', methods=['DELETE'])
-def delete_products(id):
-    """ Removes a Product from the database that matches the id """
-    Product.catalog.delete(id)
 
-    return make_response('', HTTP_204_NO_CONTENT)
+
+######################################################################
+# ACTION ON AN EXISTING PRODUCT: ADD REVIEW
+######################################################################
+@app.route('/products/<int:id>/review', methods=['PUT'])
+def review_products(id):
+    """ Adds a review to product in the catalog """
+    product = Product.catalog.find(id)
+    if product:
+        payload = request.get_json()
+        # Ensure that required attributes are provided:
+        if ('username' not in payload or 'score' not in payload):
+            abort(400)
+        # Pass on new review to product:
+        review = Review(**payload)
+        review_list = product.get_review_list()
+        review_list.append(review)
+        product.set_review_list(review_list)
+        product.catalog.save(product)
+        message = product.serialize()
+        return_code = HTTP_200_OK
+    else:
+        message = {'error': 'Product with id: %s was not found' % str(id)}
+        return_code = HTTP_404_NOT_FOUND
+
+    return jsonify(message), return_code
 
 
 ######################################################################
@@ -232,7 +247,7 @@ def data_reset():
 def initialize_logging(log_level=logging.INFO):
     """ Initialized the default logging to STDOUT """
     if not app.debug:
-        print('Setting up logging...')
+        print 'Setting up logging...'
         # Set up default logging for submodules to use STDOUT
         # datefmt='%m/%d/%Y %I:%M:%S %p'
         fmt = '[%(asctime)s] %(levelname)s in %(module)s: %(message)s'
@@ -253,18 +268,23 @@ def initialize_logging(log_level=logging.INFO):
 ######################################################################
 #   M A I N
 ######################################################################
-if __name__ == "__main__":
-    print("*********************************")
-    print(" P R O D U C T   S H O P   S E R V I C E ")
-    print("*********************************")
-    initialize_logging()
-    phone_review_list = [Review(username="applefan", score="4", detail="OK"),
-                         Review(username="helloworld", score="4", detail="As expected"),
-                         Review(username="pythonfan", score="3", detail="So So")]
-    pc_review_list = [Review(username="applelover", score="5", detail="Excellent"),
-                      Review(username="tvfan", score="5", detail="Loving this!!"),
-                      Review(username="devops team member", score="5", detail="Highly recommend!"),
-                      Review(username="nyu", score="5", detail="Nice!")]
-    Product.catalog.save(Product(0, "iPhone 8", 649, review_list=phone_review_list))
-    Product.catalog.save(Product(0, "MacBook Pro", 1799, review_list=pc_review_list))
-    app.run(host='0.0.0.0', port=int(PORT), debug=DEBUG)
+# if __name__ == "__main__":
+#     print "*********************************"
+#     print " P R O D U C T   S H O P   S E R V I C E "
+#     print "*********************************"
+#     initialize_logging()
+#     phone_review_list = [Review(username="applefan", score="4", detail="OK"),
+#                          Review(username="helloworld",
+#                                 score="4", detail="As expected"),
+#                          Review(username="pythonfan", score="3", detail="So So")]
+#     pc_review_list = [Review(username="applelover", score="5", detail="Excellent"),
+#                       Review(username="tvfan", score="5",
+#                              detail="Loving this!!"),
+#                       Review(username="devops team member",
+#                              score="5", detail="Highly recommend!"),
+#                       Review(username="nyu", score="5", detail="Nice!")]
+#     Product.catalog.save(
+#         Product("iPhone 8", 649, 0, review_list=phone_review_list))
+#     Product.catalog.save(
+#         Product("MacBook Pro", 1799, 1, review_list=pc_review_list))
+#     app.run(host='0.0.0.0', port=int(PORT), debug=DEBUG)

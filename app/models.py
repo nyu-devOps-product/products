@@ -1,4 +1,15 @@
+"""
+Models for Product catalog
+All of the models are stored in this module
+Models
+------
+Catalog - A catalog used in the database
+Product - save product value
+Review  - A review used in product store
+"""
+
 import os
+import threading
 import re
 import json
 import logging
@@ -7,7 +18,6 @@ from redis import Redis
 from redis.exceptions import ConnectionError
 
 logger = logging.getLogger(__name__)
-
 
 class DataValidationError(Exception):
     """ Used for an data validation errors when deserializing """
@@ -22,6 +32,7 @@ class Catalog:
         self.redis = redis
 
     # TODO: finish connecting to Redis
+
     def next_index(self):
         """ Increments the index and returns it """
         return self.redis.incr('index')
@@ -146,7 +157,15 @@ class Catalog:
             raise ConnectionError('Could not connect to the Redis Service')
 
 
-class Product:
+
+class Product(object):
+    """
+    Class represents a product
+
+    required parameters: name, price. If id isn't specified, it will be
+    auto-incremented when added to Catalog
+    """
+
     # static variable
     catalog = Catalog()
 
@@ -163,39 +182,51 @@ class Product:
             self.review_list = review_list
 
     def get_id(self):
+        """ Returns product id """
         return self.id
 
     def set_id(self, id):
+        """ set product id """
         self.id = id
 
     def get_name(self):
+        """ Returns product name """
         return self.name
 
     def set_name(self, name):
+        """ set product name """
         self.name = name
 
     def get_price(self):
+        """ Returns product price """
         return self.price
 
     def set_price(self, price):
+        """ set product price """
         self.price = price
 
     def get_image_id(self):
+        """ Returns product image_id """
         return self.image_id
 
     def set_image_id(self, image_id):
+        """ set product image_id """
         self.image_id = image_id
 
     def get_description(self):
+        """ Returns product description """
         return self.description
 
     def set_description(self, description):
+        """ set product description """
         self.description = description
 
     def get_review_list(self):
+        """ Returns product review_list """
         return self.review_list
 
     def set_review_list(self, review_list):
+        """ set product review_list """
         self.review_list = review_list
 
     def serialize(self):
@@ -216,7 +247,8 @@ class Product:
             data (dict): A dictionary containing the product data
         """
         if not isinstance(data, dict):
-            raise DataValidationError('Invalid pet: body of request contained bad or no data')
+            raise DataValidationError(
+                'Invalid pet: body of request contained bad or no data')
         # Set required attributes:
         try:
             # note "id" is immutable
@@ -226,6 +258,7 @@ class Product:
             raise DataValidationError('Invalid product: missing ' + err.args[0])
         except TypeError as err:
             raise DataValidationError('Invalid product: body of request contained bad or no data')
+
         # Set optional attributes:
         for attribute in data:
             if attribute not in ['name', 'price']:
@@ -238,7 +271,7 @@ class Product:
     def avg_score(self):
         res = 0.0
         count = 0
-        if len(self.review_list) == 0:
+        if not self.review_list:
             return 0.0
         for review in self.review_list:
             count += 1
@@ -246,7 +279,10 @@ class Product:
         return res / count
 
 
-class Review:
+class Review(object):
+    """
+    Class represents a review
+    """
     def __init__(self, username='', score=0, date='', detail=''):
         self.username = username
         self.score = score
@@ -254,29 +290,39 @@ class Review:
         self.detail = detail
 
     def get_username(self):
+        """ Returns Review username """
         return self.username
 
     def get_date(self):
+        """ Returns Review date """
         return self.date
 
     def get_score(self):
+        """ Returns Review score """
         return self.score
 
     def get_detail(self):
+        """ Returns Review detail """
         return self.detail
 
     def set_username(self, username):
+        """ set Review username """
         self.username = username
 
     def set_date(self, date):
+        """ set Review date """
         self.date = date
 
     def set_score(self, score):
+        """ set Review score """
         self.score = score
 
     def set_detail(self, detail):
+        """ set Review detail """
         self.detail = detail
 
     def serialize(self):
-        result = {"date": self.date, "score": self.score, "detail": self.detail}
+        """ Serializes a Review into a dictionary """
+        result = {"username": self.username, "date": self.date,
+                  "score": self.score, "detail": self.detail}
         return result

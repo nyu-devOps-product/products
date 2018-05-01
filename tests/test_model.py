@@ -20,11 +20,15 @@ Test cases can be run with:
 """
 
 import unittest
+<<<<<<< HEAD
 import os
 from unittest.mock import patch
 from redis import Redis
 import json
 from models import Product, DataValidationError, Review
+=======
+from app.models import Product, DataValidationError, Review
+>>>>>>> master
 
 # could be used to connect to the Redis server on Bluemix
 # now it is set to the Travis CI localhost
@@ -43,6 +47,8 @@ VCAP_SERVICES = {
 ######################################################################
 #  T E S T   C A S E S
 ######################################################################
+
+
 class TestProducts(unittest.TestCase):
     """ Test Cases for Products """
 
@@ -65,7 +71,12 @@ class TestProducts(unittest.TestCase):
         product.set_price(449)
         product.set_image_id("001")
         product.set_description("Latest TV")
+<<<<<<< HEAD
         review = Review(username="couchpotato123", score=5, detail="Fantastic TV")
+=======
+        review = Review(username="couchpotato123",
+                        score="5", detail="Fantastic TV")
+>>>>>>> master
         review_list = [review]
         product.set_review_list(review_list)
         self.assertEqual(product.get_id(), 0)
@@ -134,6 +145,7 @@ class TestProducts(unittest.TestCase):
 
     def test_deserialize_a_product(self):
         """ Test deserialization of a product """
+<<<<<<< HEAD
         data = {
             "name": "iPhone",
             "price": 649,
@@ -142,6 +154,11 @@ class TestProducts(unittest.TestCase):
             "description": "Latest phone model."
         }
         product = Product(id=data["id"])
+=======
+        data = {"name": "iPhone", "price": "649", "id": "0",
+                "image_id": "0005", "description": "Latest phone model."}
+        product = Product(name="Samsung", price="749")
+>>>>>>> master
         product.deserialize(data)
         self.assertNotEqual(product, None)
         # Must be the same from the deserialized object:
@@ -153,6 +170,7 @@ class TestProducts(unittest.TestCase):
 
     def test_deserialize_without_required_fields(self):
         """ Deserialize a product without all required fields """
+<<<<<<< HEAD
         # Should fail deserializing a product with missing name (required attribute):
         data = {"price": 649}
         self.assertRaises(DataValidationError, self.product.deserialize, data)
@@ -161,13 +179,30 @@ class TestProducts(unittest.TestCase):
         self.assertRaises(DataValidationError, self.product.deserialize, data)
         # Should successfully deserialize product with all required fields:
         data = {"name": "Samsung", "price": 900}
+=======
+        # Should fail deserializing a product with missing name (required
+        # attribute):
+        data = {"price": "649", "id": "0"}
+        self.assertRaises(DataValidationError, self.product.deserialize, data)
+        # Should fail deserializing a product with missing price (required
+        # attribute):
+        data = {"name": "iPhone", "id": "0"}
+        self.assertRaises(DataValidationError, self.product.deserialize, data)
+        # Should successfully deserialize product with all required fields:
+        data = {"name": "Samsung", "price": "900"}
+>>>>>>> master
         self.product.deserialize(data)
         self.assertEqual(self.product.name, "Samsung")
         self.assertEqual(self.product.price, 900)
 
     def test_deserialize_with_bad_attributes(self):
         """ Deserialize a product with bad attributes """
+<<<<<<< HEAD
         data = {"name": "Samsung", "price": 900, "bad_attribute": "740"}
+=======
+        data = {"name": "Samsung", "price": "900",
+                "id": "0", "bad_attribute": "740"}
+>>>>>>> master
         self.assertRaises(DataValidationError, self.product.deserialize, data)
 
     def test_deserialize_with_no_data(self):
@@ -176,7 +211,8 @@ class TestProducts(unittest.TestCase):
 
     def test_deserialize_with_bad_data(self):
         """ Deserailize a product with bad data """
-        self.assertRaises(DataValidationError, self.product.deserialize, "data")
+        self.assertRaises(DataValidationError,
+                          self.product.deserialize, "data")
 
     def test_find_product(self):
         """ Find a product by ID """
@@ -214,11 +250,21 @@ class TestProducts(unittest.TestCase):
 
     def test_get_review_avg_score(self):
         """ Get average score for a list of reviews """
+<<<<<<< HEAD
         watch_review_list = [Review(username="applefan", score=4, detail="OK"),
         Review(username="helloworld", score=4, detail="As expected"),
         Review(username="pythonfan", score=3, detail="So So")]
         watch = Product(id=2, name="I Watch", price=329, image_id="001")
         avg_score = float(4+4+3)/3
+=======
+        watch_review_list = [Review(username="applefan", score="4", detail="OK"),
+                             Review(username="helloworld",
+                                    score="4", detail="As expected"),
+                             Review(username="pythonfan", score="3", detail="So So")]
+        watch = Product(name="I Watch", price=329, id="2",
+                        image_id="001", review_list=watch_review_list)
+        avg_score = float(4 + 4 + 3) / 3
+>>>>>>> master
         watch.set_review_list(watch_review_list)
         self.assertEquals(watch.avg_score(), avg_score)
 
@@ -250,10 +296,11 @@ class TestProducts(unittest.TestCase):
         self.assertRaises(ConnectionError, Product.catalog.init_db)
         self.assertIsNone(Product.catalog.redis)
 
+
 ######################################################################
 #   M A I N
 ######################################################################
 if __name__ == '__main__':
     unittest.main()
-    # suite = unittest.TestLoader().loadTestsFromTestCase(TestPets)
+    # suite = unittest.TestLoader().loadTestsFromTestCase(TestProducts)
     # unittest.TextTestRunner(verbosity=2).run(suite)
