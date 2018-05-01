@@ -2,6 +2,9 @@
 .env
 .DS_Store
 
+# IDE
+.idea/
+
 # Virtual Environment files
 venv/
 
