@@ -172,7 +172,9 @@ class TestProductServer(unittest.TestCase):
     def test_add_product_review(self):
         """ Review product """
         new_review = {"username": "Grumpy Grumperson",
-                      "score": 1, "detail": "Can't stand it"}
+                      "date": "2018/04/05",
+                      "score": 1,
+                      "detail": "Can't stand it"}
         data = json.dumps(new_review)
         resp = self.app.put("products/1/review", data=data,
                             content_type='application/json')

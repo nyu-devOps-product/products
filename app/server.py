@@ -206,7 +206,8 @@ def review_products(id):
         if ('username' not in payload or 'score' not in payload):
             abort(400)
         # Pass on new review to product:
-        review = Review(**payload)
+        review = Review(username=payload['username'], date=payload['date'],
+                        score=payload['score'], detail=payload['detail'])
         review_list = product.get_review_list()
         review_list.append(review)
         product.set_review_list(review_list)
