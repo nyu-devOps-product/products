@@ -24,8 +24,8 @@ from . import app
 # PORT = os.getenv('PORT', '5000')
 
 # Create Flask application
-app = Flask(__name__)
-app.config['LOGGING_LEVEL'] = logging.INFO
+#app = Flask(__name__)
+#app.config['LOGGING_LEVEL'] = logging.INFO
 
 
 # Configure Swagger before initilaizing it
