@@ -32,8 +32,7 @@ from app.models import Product, DataValidationError, Review
 # For testing, our VCAP points to the Travis CI localhost
 VCAP_SERVICES = os.getenv('VCAP_SERVICES', None)
 if not VCAP_SERVICES:
-    VCAP_SERVICES = '{"rediscloud": [{"credentials": {' \
-        '"password": "", "hostname": "127.0.0.1", "port": "6379"}}]}'
+    VCAP_SERVICES = '{"rediscloud": [{"credentials": {"password": "", "hostname": "127.0.0.1", "port": "6379"}}]}'
 
 logger = logging.getLogger(__name__)
 
@@ -227,7 +226,7 @@ class TestProducts(unittest.TestCase):
         self.assertEquals(self.product.review_list, [])
         self.assertEqual(self.product.avg_score(), 0.0)
 
-    @patch.dict(os.environ, {'VCAP_SERVICES': json.dumps(VCAP_SERVICES)})
+    @patch.dict(os.environ, {'VCAP_SERVICES': VCAP_SERVICES})
     def test_vcap_services(self):
         """ Test if VCAP_SERVICES works """
         Product.catalog.init_db()
