@@ -86,7 +86,6 @@ class TestProducts(unittest.TestCase):
 
     def test_add_a_product(self):
         """ Create a product and add it to the catalog """
-        logger.info('length of keys in database should be zero!! ' + str(len(Product.catalog.redis.keys())))
         products = Product.catalog.all()
         self.assertEqual(products, [])
         self.assertTrue(self.product != None)

@@ -58,7 +58,6 @@ class Catalog:
         """ Returns all of the Products in the database """
         # return a `copy` of data
         results = []
-        logger.info('Again, length of keys in database should be zero!! ' + str(len(Product.catalog.redis.keys())))
         for key in self.redis.keys():
             if key != 'index':  # filter out our id index
                 data = pickle.loads(self.redis.get(key))
@@ -175,7 +174,7 @@ class Product(object):
     catalog = Catalog()
 
     # required parameters: name, price. If id isn't specified, it will be auto-incremented when added to Catalog
-    def __init__(self, id=0, name=None, price=None, image_id='', description='', review_list=None):
+    def __init__(self, id=0, name="", price=0, image_id='', description='', review_list=None):
         self.id = int(id)
         self.name = name
         self.price = int(price)
