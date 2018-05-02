@@ -119,9 +119,26 @@ def list_products():
     description: The Products endpoint allows you to query Products
     parameters:
       - in: query
-        name: keyword
+        name: id
+        type: integer
+        description: query the product that match the id
+      - in: query
+        name: name
         type: string
-        description: query the product that match the keyword
+        description: query the product that match the name
+      - in: query
+        name: price
+        type: number
+        format: float
+        description: query the product that match the price
+      - in: query
+        name: image_id
+        type: integer
+        description: query the product that match the image id
+      - in: query
+        name: description
+        type: string
+        description: query the product that match the description
       - in: query
         name: sort
         type: string
@@ -134,7 +151,8 @@ def list_products():
             type: string
             description: name for the product
           price:
-            type: string
+            type: number
+            format: float
             description: the price of product
           id:
             type: integer
@@ -283,7 +301,6 @@ def create_product():
         name: body
         required: true
         schema:
-          id: data
           required:
             - name
             - price
@@ -295,7 +312,8 @@ def create_product():
               type: string
               description: name for the product
             price:
-              type: string
+              type: number
+              format: float
               description: the price of product
             id:
               type: integer
@@ -308,6 +326,7 @@ def create_product():
               description: description for the product
             review_list:
               type: array
+              default: []
               items:
                 type: object
                 properties:
@@ -316,6 +335,7 @@ def create_product():
                     description: username for the reviewer
                   score:
                     type: integer
+                    default: 100
                     description: score the product receive
                   date:
                     type: string
@@ -327,7 +347,48 @@ def create_product():
       201:
         description: Product created
         schema:
-          $ref: '#/definitions/Product'
+          required:
+            - name
+            - price
+            - id
+            - image_id
+            - description
+          properties:
+            name:
+              type: string
+              description: name for the product
+            price:
+              type: number
+              format: float
+              description: the price of product
+            id:
+              type: integer
+              description: id for the product
+            image_id:
+              type: integer
+              description: image id for the product
+            description:
+              type: string
+              description: description for the product
+            review_list:
+              type: array
+              default: []
+              items:
+                type: object
+                properties:
+                  username:
+                    type: string
+                    description: username for the reviewer
+                  score:
+                    type: integer
+                    default: 100
+                    description: score the product receive
+                  date:
+                    type: string
+                    description: time that product receive review
+                  detail:
+                    type: string
+                    description: review detail description
       400:
         description: Bad Request (the posted data was not valid)
     """
@@ -369,7 +430,6 @@ def update_products(id):
       - in: body
         name: body
         schema:
-          id: data
           required:
             - name
             - price
@@ -382,7 +442,8 @@ def update_products(id):
               type: string
               description: name for the product
             price:
-              type: string
+              type: number
+              format: float
               description: the price of product
             id:
               type: integer
@@ -393,23 +454,7 @@ def update_products(id):
             description:
               type: string
               description: description for the product
-            review_list:
-              type: array
-              items:
-                type: object
-                properties:
-                  username:
-                    type: string
-                    description: username for the reviewer
-                  score:
-                    type: integer
-                    description: score the product receive
-                  date:
-                    type: string
-                    description: time that product receive review
-                  detail:
-                    type: string
-                    description: review detail description
+            
     responses:
       200:
         description: Product Updated
@@ -459,47 +504,26 @@ def review_products(id):
       - in: body
         name: body
         schema:
-          id: data
+
           required:
             - username
-            - price
-            - id
-            - image_id
-            - description
-            - review_list
+            - score
+            - date
+            - detail
           properties:
-            name:
+            username:
               type: string
-              description: name for the product
-            price:
-              type: string
-              description: the price of product
-            id:
+              description: username for the reviewer
+            score:
               type: integer
-              description: id for the product
-            image_id:
-              type: integer
-              description: image id for the product
-            description:
+              description: score the product receive
+            date:
               type: string
-              description: description for the product
-            review_list:
-              type: array
-              items:
-                type: object
-                properties:
-                  username:
-                    type: string
-                    description: username for the reviewer
-                  score:
-                    type: integer
-                    description: score the product receive
-                  date:
-                    type: string
-                    description: time that product receive review
-                  detail:
-                    type: string
-                    description: review detail description
+              description: time that product receive review
+            detail:
+              type: string
+              description: review detail description
+                  
     responses:
       200:
         description: Review Updated
