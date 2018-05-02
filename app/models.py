@@ -80,12 +80,14 @@ class Catalog:
     def query(self, keyword, value):
         """ Find Products by keyword """
         found = []
-        pattern = r'(?i).*?{0}.*?'.format(value)
+        pattern = r'.*?{0}.*?'.format(value) # ignore case
         for key in self.redis.keys():
             if key != 'index':  # filter out our id index
                 data = pickle.loads(self.redis.get(key))
-                match = re.search(pattern, str(data[keyword]))
+                logging.info('try to match with: ' + str(data[keyword]))
+                match = re.search(pattern, str(data[keyword]), re.IGNORECASE)
                 if match:
+                    logging.info('so this is a match!')
                     found.append(Product(id=data['id']).deserialize(data))
         return found
 
