@@ -45,8 +45,8 @@ Scenario: Update a product
     Then I should see "iPhone" in the "Name" field
     When I change "Name" to "Apple phone 8"
     And I press the "Update" button
-    Then I should see the message "Success"
-    When I change "Id" to "1"
+    And I press the "Clear" button
+    And I change "Id" to "1"
     And I press the "Retrieve" button
     Then I should see "Apple phone 8" in the "Name" field
     When I press the "Clear" button
