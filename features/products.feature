@@ -65,8 +65,6 @@ Scenario: Delete a product
     Then I should see "iPhone" in the results
     And I should see "Samsung" in the results
     And I should not see "Speaker" in the results
-<<<<<<< HEAD
-=======
 
 Scenario: Query a product by keyword
     When I visit the "Home Page"
@@ -90,4 +88,3 @@ Scenario: Action on a product - Post review
     Then I should see "iPhone" in the results
     And I should see "username: Grumpy_user" in the results
     And I should see "score: 1" in the results
->>>>>>> master
