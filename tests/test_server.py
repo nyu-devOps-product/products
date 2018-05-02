@@ -178,7 +178,9 @@ class TestProductServer(unittest.TestCase):
         data = json.dumps(new_review)
         resp = self.app.put("products/1/review", data=data,
                             content_type='application/json')
+        logging.info('serialize you wen ti ma? ' + str(json.loads(resp.data)))
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
         resp = self.app.get('/products/1', content_type='application/json')
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         new_json = json.loads(resp.data)
