@@ -89,6 +89,7 @@ class Catalog:
                 if match:
                     logging.info('so this is a match!')
                     found.append(Product(id=data['id']).deserialize(data))
+        logging.info('found {0} matches!'.format(len(found)))
         return found
 
     def remove_all(self):
