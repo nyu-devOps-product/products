@@ -45,8 +45,6 @@ import error_handlers
 ######################################################################
 # GET HEALTH CHECK
 ######################################################################
-
-
 @app.route('/healthcheck')
 def healthcheck():
     """ Let them know our heart is still beating """
@@ -239,7 +237,7 @@ def init_db(redis=None):
 # load sample data
 def data_load(payload):
     """ Loads a Product into the database """
-    product = Product(**payload)
+    product = Product(name=payload['name'], price=payload['price'])
     Product.catalog.save(product)
 
 

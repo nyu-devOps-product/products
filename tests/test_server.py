@@ -43,11 +43,12 @@ class TestProductServer(unittest.TestCase):
 
     def setUp(self):
         """ Runs before each test """
-        server.Product.catalog.remove_all()
-        server.Product.catalog.save(Product(name="iPhone 8", price=649, id=0))
-        server.Product.catalog.save(
-            Product(name="MacBook Pro", price=1799, id=1))
         self.app = server.app.test_client()
+        server.initialize_logging()
+        server.init_db()
+        server.data_reset()
+        server.data_load({"name": "iPhone 8", "price": 649})
+        server.data_load({"name": "MacBook Pro", "price": 1799})
 
     def tearDown(self):
         """ Runs after each test """
