@@ -36,8 +36,6 @@ class Catalog:
         self.validator = Validator(schema)
         self.redis = redis
 
-    # TODO: finish connecting to Redis
-
     def next_index(self):
         """ Increments the index and returns it """
         return self.redis.incr('index')
@@ -79,23 +77,16 @@ class Catalog:
     def remove_all(self):
         self.redis.flushall()
 
-    def query(self, keyword):
-        """ Query/Find Products by keyword """
+    def query(self, keyword, value):
+        """ Find Products by keyword """
         found = []
-        logger.info('Processing query for %s', keyword)
-        if isinstance(keyword, str):
-            keyword = keyword.lower()  # make case insensitive
+        pattern = r'.*?{0}.*?'.format(value)
+        for product in self.all():
+            fields = product.serialize()
+            match = re.search(pattern, str(fields[keyword]))
+            if match:
+                found.append(product)
 
-        pattern = r'.*?{0}.*?'.format(keyword)
-        for key in self.redis.keys():
-            if key != 'index':  # filter out our id index
-                data = pickle.loads(self.redis.get(key))
-                for ele in data:
-                    if ele != "review_list":
-                        match = re.search(pattern, str(data[ele]))
-                        if match:
-                            found.append(Product(id=data['id']).deserialize(data))
-                            break
         return found
 
     def remove_all(self):
