@@ -189,7 +189,7 @@ def update_products(id):
     if not product:
         abort(HTTP_404_NOT_FOUND, "Product with id '{}' was not found.".format(id))
     product.deserialize(request.get_json())
-    Product.catalog.save()
+    Product.catalog.save(product)
     return make_response(jsonify(product.serialize()), HTTP_200_OK)
 
 

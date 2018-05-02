@@ -144,10 +144,10 @@ class TestProductServer(unittest.TestCase):
         new_product = {'name': 'sony vaio', 'price': 549}
         data = json.dumps(new_product)
         # Update product with id 0:
-        resp = self.app.put('/products/0', data=data,
+        resp = self.app.put('/products/1', data=data,
                             content_type='application/json')
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        resp = self.app.get('/products/0', content_type='application/json')
+        resp = self.app.get('/products/1', content_type='application/json')
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         new_json = json.loads(resp.data)
         self.assertEqual(new_json['name'], 'sony vaio')
