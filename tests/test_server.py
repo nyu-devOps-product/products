@@ -222,7 +222,7 @@ class TestProductServer(unittest.TestCase):
         """ Get one product with keyword """
         resp = self.app.get('/products', query_string='name=iPhone')
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        logging.info('resp.data length: ' + str(len(resp.data)))
+        logging.info('resp.data length: ' + str(len(json.loads(resp.data))))
         self.assertTrue(len(resp.data) > 0)
         logging.info('resp.data: ' + str(json.loads(resp.data)))
         self.assertIn('iPhone 8', resp.data)
