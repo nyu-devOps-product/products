@@ -112,35 +112,71 @@ def delete_products(id):
 def list_products():
     """ 
     Retrieves a list of products from the database
-    This endpoint will return all Pets unless a query parameter is specificed
+    This endpoint will return all Products unless a query parameter is specificed
     ---
     tags:
       - Products
     description: The Products endpoint allows you to query Products
     parameters:
-      - name: category
-        in: query
-        description: the category of Product you are looking for
-        required: false
+      - in: query
+        name: keyword
         type: string
-      - name: name
-        in: query
-        description: the name of Product you are looking for
-        required: false
+        description: query the product that match the keyword
+      - in: query
+        name: sort
         type: string
+        description: use "price", "price-", "review", "name", "name-" to sort the product list
     definitions:
       Product:
         type: object
         properties:
-          id:
-            type: integer
-            description: unique id assigned internallt by service
           name:
             type: string
-            description: the products's name
-          category:
+            description: name for the product
+          price:
             type: string
-            description: the category of product (e.g., iphone, tc, etc.)
+            description: the price of product
+          id:
+            type: integer
+            description: id for the product
+          image_id:
+            type: integer
+            description: image id for the product
+          description:
+            type: string
+            description: description for the product
+          review_list:
+            type: array
+            items:
+              type: object
+              properties:
+                username:
+                  type: string
+                  description: username for the reviewer
+                score:
+                  type: integer
+                  description: score the product receive
+                date:
+                  type: string
+                  description: time that product receive review
+                detail:
+                  type: string
+                  description: review detail description
+      Review:
+        type: object
+        properties:
+          username:
+            type: string
+            description: username for the reviewer
+          score:
+            type: integer
+            description: score the product receive
+          date:
+            type: string
+            description: time that product receive review
+          detail:
+            type: string
+            description: review detail description
     responses:
       200:
         description: An array of Products
@@ -230,7 +266,7 @@ def get_products(id):
 @app.route('/products', methods=['POST'])
 def create_product():
     """ Creates a product and saves it
-    This endpoint will create a Product based the data in the body that is posted
+    This endpoint will create a Product based the data in the body that is posted!!
     ---
     tags:
       - Products
@@ -250,7 +286,6 @@ def create_product():
             - id
             - image_id
             - description
-            - review_list
           properties:
             name:
               type: string
@@ -333,17 +368,47 @@ def update_products(id):
           id: data
           required:
             - name
-            - category
+            - price
+            - id
+            - image_id
+            - description
+            - review_list
           properties:
             name:
               type: string
-              description: name for the Product
-            category:
+              description: name for the product
+            price:
               type: string
-              description: the category of product (iphone, macbook, etc.)
+              description: the price of product
+            id:
+              type: integer
+              description: id for the product
+            image_id:
+              type: integer
+              description: image id for the product
+            description:
+              type: string
+              description: description for the product
+            review_list:
+              type: array
+              items:
+                type: object
+                properties:
+                  username:
+                    type: string
+                    description: username for the reviewer
+                  score:
+                    type: integer
+                    description: score the product receive
+                  date:
+                    type: string
+                    description: time that product receive review
+                  detail:
+                    type: string
+                    description: review detail description
     responses:
       200:
-        description: Pet Updated
+        description: Product Updated
         schema:
           $ref: '#/definitions/Product'
       400:
@@ -370,7 +435,75 @@ def update_products(id):
 ######################################################################
 @app.route('/products/<int:id>/review', methods=['PUT'])
 def review_products(id):
-    """ Adds a review to product in the catalog """
+    """ Adds a review to product in the catalog 
+    This endpoint will update a Product's review based the body that is posted
+    ---
+    tags:
+      - Products
+    paths:
+      - /products/<int:id>/review
+    consumes:
+      - application/json
+    produces:
+      - application/json
+    parameters:
+      - name: id
+        in: path
+        description: ID of product to retrieve
+        type: integer
+        required: true
+      - in: body
+        name: body
+        schema:
+          id: data
+          required:
+            - username
+            - price
+            - id
+            - image_id
+            - description
+            - review_list
+          properties:
+            name:
+              type: string
+              description: name for the product
+            price:
+              type: string
+              description: the price of product
+            id:
+              type: integer
+              description: id for the product
+            image_id:
+              type: integer
+              description: image id for the product
+            description:
+              type: string
+              description: description for the product
+            review_list:
+              type: array
+              items:
+                type: object
+                properties:
+                  username:
+                    type: string
+                    description: username for the reviewer
+                  score:
+                    type: integer
+                    description: score the product receive
+                  date:
+                    type: string
+                    description: time that product receive review
+                  detail:
+                    type: string
+                    description: review detail description
+    responses:
+      200:
+        description: Review Updated
+        schema:
+          $ref: '#/definitions/Review'
+      400:
+        description: Bad Request (the posted data was not valid)
+    """
     product = Product.catalog.find(id)
     if product:
         payload = request.get_json()
