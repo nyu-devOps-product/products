@@ -118,6 +118,7 @@ def list_products():
 def get_products(id):
     """ Retrieves a Product with a specific id """
     product = Product.catalog.find(id)
+    logging.info('review_list: ', product.review_list)
     if not product:
         abort(HTTP_404_NOT_FOUND, "Product with id '{}' was not found.".format(id))
 
