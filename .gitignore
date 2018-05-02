@@ -2,6 +2,9 @@
 .env
 .DS_Store
 
+# IDE
+.idea/
+
 # Virtual Environment files
 venv/
 
@@ -9,6 +12,7 @@ venv/
 .vagrant
 
 # Byte-compiled / optimized / DLL files
+.pytest_cache/
 __pycache__/
 *.py[cod]
 *$py.class

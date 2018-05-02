@@ -8,89 +8,158 @@ Product - save product value
 Review  - A review used in product store
 """
 
-import threading
+import os
 import re
+import json
+import logging
+import pickle
+from cerberus import Validator
+from redis import Redis
+from redis.exceptions import ConnectionError
+from custom_exceptions import DataValidationError
+
+logger = logging.getLogger(__name__)
 
 
-class DataValidationError(Exception):
-    """ Used for an data validation errors when deserializing """
-    pass
-
-
-class Catalog(object):
-    """
-    Class that represents a Catalog
-    """
-
-    def __init__(self):
-        self.data = []
-        self.index = -1
-        self.lock = threading.Lock()
+class Catalog:
+    def __init__(self, redis=None):
+        """Redis handles storage as well as index, thread safety"""
+        # Define the rules and validator according the rules.
+        schema = {
+            'id': {'type': 'integer'},
+            'name': {'type': 'string', 'required': True},
+            'price': {'type': 'integer', 'required': True},
+            'image_id':{'type': 'string'},
+            'description': {'type': 'string'},
+            'review_list': {'type': 'list'}
+        }
+        self.validator = Validator(schema)
+        self.redis = redis
 
     def next_index(self):
-        with self.lock:
-            self.index += 1
-        return self.index
+        """ Increments the index and returns it """
+        return self.redis.incr('index')
 
     def save(self, product):
         """
         Saves a Product to the data store
         This includes save a new Product or Update a product with the same id
         """
-        if product.id < 0:
+        if product.name is None:
+            raise DataValidationError('name attribute is not set and it is required')
+        if product.id <= 0:
             product.set_id(self.next_index())
-        else:
-            for i in range(len(self.data)):
-                if self.data[i].id == product.id:
-                    self.data[i] = product
-                    return
-        self.data.append(product)
+
+        self.redis.set(product.id, pickle.dumps(product.serialize()))
 
     def all(self):
         """ Returns all of the Products in the database """
         # return a `copy` of data
-        return [product for product in self.data]
+        results = []
+        for key in self.redis.keys():
+            if key != 'index':  # filter out our id index
+                data = pickle.loads(self.redis.get(key))
+                product = Product(id=data['id']).deserialize(data)
+                results.append(product)
+        return results
 
     def find(self, id):
         """ Find a Product by its ID """
-        if not self.data:
-            return None
-        products = [product for product in self.data if str(
-            product.id) == str(id)]
-        if products:
-            return products[0]
+        if self.redis.exists(id):
+            data = pickle.loads(self.redis.get(id))
+            product = Product(id=data['id']).deserialize(data)
+            return product
         return None
 
     def delete(self, id):
-        """ Removes a product with a specific id from the data store """
-        product = self.find(id)
+        self.redis.delete(id)
 
-        if product:
-            self.data.remove(product)
+    def remove_all(self):
+        self.redis.flushall()
 
     def query(self, keyword, value):
         """ Find Products by keyword """
         found = []
-        pattern = r'.*?{0}.*?'.format(value)
-        for product in self.all():
-            fields = product.serialize()
-            match = re.search(pattern, str(fields[keyword]))
-            if match:
-                found.append(product)
-
+        pattern = r'.*?{0}.*?'.format(value) # ignore case
+        for key in self.redis.keys():
+            if key != 'index':  # filter out our id index
+                data = pickle.loads(self.redis.get(key))
+                # logging.info('try to match with: ' + str(data[keyword]))
+                match = re.search(pattern, str(data[keyword]), re.IGNORECASE)
+                if match:
+                    logging.info('so this is a match!')
+                    found.append(Product(id=data['id']).deserialize(data))
+        # logging.info('found {0} matches!'.format(len(found)))
         return found
 
     def remove_all(self):
         """ Removes all of the products from the database """
-        del self.data[:]
-        self.index = -1
-        return self.data
+        self.redis.flushall()
+
+######################################################################
+#  R E D I S   D A T A B A S E   C O N N E C T I O N   M E T H O D S
+######################################################################
+
+    def init_db(self, redis=None):
+        """
+        Initialized Redis database connection
+        This method will work in the following conditions:
+          1) In Bluemix with Redis bound through VCAP_SERVICES
+          2) With Redis running on the local server as with Travis CI
+          3) With Redis --link in a Docker container called 'redis'
+          4) Passing in your own Redis connection object
+        Exception:
+        ----------
+          redis.ConnectionError - if ping() test fails
+        """
+        if redis:
+            logger.info("Using client connection...")
+            self.redis = redis
+            try:
+                self.redis.ping()
+                logger.info("Connection established")
+            except ConnectionError:
+                logger.error("Client Connection Error!")
+                self.redis = None
+                raise ConnectionError('Could not connect to the Redis Service')
+            return
+
+        # Get the credentials from the Bluemix environment
+        if 'VCAP_SERVICES' in os.environ:
+            logger.info("Using VCAP_SERVICES...")
+            vcap_services = os.environ['VCAP_SERVICES']
+            services = json.loads(vcap_services)
+            creds = services['rediscloud'][0]['credentials']
+            logger.info("Conecting to Redis on host %s port %s",
+                            creds['hostname'], creds['port'])
+            self.connect_to_redis(creds['hostname'], creds['port'], creds['password'])
+        else:
+            logger.info("VCAP_SERVICES not found, checking localhost for Redis")
+            self.connect_to_redis('127.0.0.1', 6379, None)
+            if not self.redis:
+                logger.info("No Redis on localhost, looking for redis host")
+                self.connect_to_redis('redis', 6379, None)
+        if not self.redis:
+            # if you end up here, redis instance is down.
+            logger.fatal('*** FATAL ERROR: Could not connect to the Redis Service')
+            raise ConnectionError('Could not connect to the Redis Service')
+
+    def connect_to_redis(self, hostname, port, password):
+        """ Connects to Redis and tests the connection """
+        logger.info("Testing Connection to: %s:%s", hostname, port)
+        self.redis = Redis(host=hostname, port=port, password=password)
+        try:
+            self.redis.ping()
+            logger.info("Connection established")
+        except ConnectionError:
+            logger.info("Connection Error from: %s:%s", hostname, port)
+            self.redis = None
+        return self.redis
 
 
 class Product(object):
     """
     Class represents a product
-
     required parameters: name, price. If id isn't specified, it will be
     auto-incremented when added to Catalog
     """
@@ -98,10 +167,11 @@ class Product(object):
     # static variable
     catalog = Catalog()
 
-    def __init__(self, name, price, id=-1, image_id='', description='', review_list=None):
-        self.id = id
+    # required parameters: name, price. If id isn't specified, it will be auto-incremented when added to Catalog
+    def __init__(self, id=0, name='', price=0, image_id='', description='', review_list=None):
+        self.id = int(id)
         self.name = name
-        self.price = price
+        self.price = int(price)
         self.image_id = image_id
         self.description = description
         if review_list is None:
@@ -115,7 +185,7 @@ class Product(object):
 
     def set_id(self, id):
         """ set product id """
-        self.id = id
+        self.id = int(id)
 
     def get_name(self):
         """ Returns product name """
@@ -131,7 +201,7 @@ class Product(object):
 
     def set_price(self, price):
         """ set product price """
-        self.price = price
+        self.price = int(price)
 
     def get_image_id(self):
         """ Returns product image_id """
@@ -159,9 +229,13 @@ class Product(object):
 
     def serialize(self):
         """ Serializes a Product into a dictionary """
-        result = {"id": self.id, "name": self.name, "price": self.price, "image_id": self.image_id,
+        result = {"id": self.id,
+                  "name": self.name,
+                  "price": self.price,
+                  "image_id": self.image_id,
                   "description": self.description,
-                  "review_list": [review.serialize() for review in self.review_list]}
+                  "review_list": [review.serialize() for review in self.review_list]
+                  }
         return result
 
     def deserialize(self, data):
@@ -170,25 +244,23 @@ class Product(object):
         Args:
             data (dict): A dictionary containing the product data
         """
-        if not isinstance(data, dict):
-            raise DataValidationError(
-                'Invalid pet: body of request contained bad or no data')
-        # Set required attributes:
-        try:
+        if isinstance(data, dict) and Product.catalog.validator.validate(data):
             self.name = data['name']
             self.price = data['price']
-        except KeyError as err:
-            raise DataValidationError(
-                'Invalid product: missing ' + err.args[0])
+        else:
+            raise DataValidationError('Invalid product: body of request contained bad or no data')
+
         # Set optional attributes:
         for attribute in data:
             if attribute not in ['name', 'price']:
                 if hasattr(self, attribute):
-                    setattr(self, attribute, data[attribute])
+                    if attribute == 'review_list':
+                        setattr(self, attribute, [Review().deserialize(review_data) for review_data in data[attribute]])
+                    else:
+                        setattr(self, attribute, data[attribute])
                 else:
-                    raise DataValidationError(
-                        'Invalid product: unknown attribute ' + attribute)
-        return
+                    raise DataValidationError('Invalid product: unknown attribute ' + attribute)
+        return self
 
     def avg_score(self):
         res = 0.0
@@ -205,10 +277,9 @@ class Review(object):
     """
     Class represents a review
     """
-
-    def __init__(self, username, score, date='', detail=''):
+    def __init__(self, username='', score=0, date='', detail=''):
         self.username = username
-        self.score = score
+        self.score = int(score)
         self.date = date
         self.detail = detail
 
@@ -244,8 +315,20 @@ class Review(object):
         """ set Review detail """
         self.detail = detail
 
+    def deserialize(self, data):
+        """ Deserializes a Review from a dictionary """
+        for attribute in data:
+            if hasattr(self, attribute):
+                setattr(self, attribute, data[attribute])
+            else:
+                raise DataValidationError('Invalid product: unknown attribute ' + attribute)
+
+        return self
+
     def serialize(self):
         """ Serializes a Review into a dictionary """
-        result = {"username": self.username, "date": self.date,
-                  "score": self.score, "detail": self.detail}
+        result = {"username": self.username,
+                  "date": self.date,
+                  "score": self.score,
+                  "detail": self.detail}
         return result

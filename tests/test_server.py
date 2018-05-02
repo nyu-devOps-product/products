@@ -43,18 +43,19 @@ class TestProductServer(unittest.TestCase):
 
     def setUp(self):
         """ Runs before each test """
-        server.Product.catalog.remove_all()
-        server.Product.catalog.save(Product(name="iPhone 8", price=649, id=0))
-        server.Product.catalog.save(
-            Product(name="MacBook Pro", price=1799, id=1))
         self.app = server.app.test_client()
+        server.initialize_logging()
+        server.init_db()
+        server.data_reset()
+        server.data_load({"name": "iPhone 8", "price": 649})
+        server.data_load({"name": "MacBook Pro", "price": 1799})
 
     def tearDown(self):
         """ Runs after each test """
         server.Product.catalog.remove_all()
 
     def test_index(self):
-        """ Test the Home Page """
+        """ Test the Home Page"""
         resp = self.app.get('/')
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         self.assertIn('Products RESTful Service', resp.data)
@@ -68,7 +69,7 @@ class TestProductServer(unittest.TestCase):
 
     def test_get_product(self):
         """ Get one product """
-        resp = self.app.get('/products/0')
+        resp = self.app.get('/products/1')
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         data = json.loads(resp.data)
         self.assertEqual(data['name'], 'iPhone 8')
@@ -81,7 +82,7 @@ class TestProductServer(unittest.TestCase):
     def test_get_product_none_in_list(self):
         """ Search for a product in a catalog with no products """
         server.Product.catalog.remove_all()
-        resp = self.app.get('/products/0')
+        resp = self.app.get('/products/1')
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
         # Ensure there are no products in the catalog:
         resp = self.app.get('/products')
@@ -94,7 +95,7 @@ class TestProductServer(unittest.TestCase):
         # save the current number of products for later comparison
         product_count = self.get_product_count()
         # add a new product
-        new_product = {'name': 'samsung hdtv', 'price': '499'}
+        new_product = {'name': 'samsung hdtv', 'price': 499}
         data = json.dumps(new_product)
         resp = self.app.post('/products', data=data,
                              content_type='application/json')
@@ -105,7 +106,7 @@ class TestProductServer(unittest.TestCase):
         # Check the data is correct
         new_json = json.loads(resp.data)
         self.assertEqual(new_json['name'], 'samsung hdtv')
-        self.assertEqual(new_json['price'], '499')
+        self.assertEqual(new_json['price'], 499)
         # check that count has gone up and includes the new product
         resp = self.app.get('/products')
         data = json.loads(resp.data)
@@ -116,7 +117,7 @@ class TestProductServer(unittest.TestCase):
     def test_create_product_with_id(self):
         """ Create a product passing in an id """
         # add a new product
-        new_product = {'name': 'sony vaio', 'price': '549', 'id': '2'}
+        new_product = {'name': 'sony vaio', 'price': 549, 'id': 2}
         data = json.dumps(new_product)
         resp = self.app.post('/products', data=data,
                              content_type='application/json')
@@ -127,12 +128,12 @@ class TestProductServer(unittest.TestCase):
         # Check the data is correct
         new_json = json.loads(resp.data)
         self.assertEqual(new_json['name'], 'sony vaio')
-        self.assertEqual(new_json['price'], '549')
-        self.assertEqual(new_json['id'], '2')
+        self.assertEqual(new_json['price'], 549)
+        self.assertEqual(new_json['id'], 2)
 
     def test_create_product_with_missing_required_attribute(self):
         """ Create a product with the name missing (required attribute) """
-        new_product = {'price': '550'}
+        new_product = {'price': 550}
         data = json.dumps(new_product)
         resp = self.app.post('/products', data=data,
                              content_type='application/json')
@@ -140,21 +141,21 @@ class TestProductServer(unittest.TestCase):
 
     def test_update_product(self):
         """ Update a product using its id """
-        new_product = {'name': 'sony vaio', 'price': '549'}
+        new_product = {'name': 'sony vaio', 'price': 549}
         data = json.dumps(new_product)
         # Update product with id 0:
-        resp = self.app.put('/products/0', data=data,
+        resp = self.app.put('/products/1', data=data,
                             content_type='application/json')
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        resp = self.app.get('/products/0', content_type='application/json')
+        resp = self.app.get('/products/1', content_type='application/json')
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         new_json = json.loads(resp.data)
         self.assertEqual(new_json['name'], 'sony vaio')
-        self.assertEqual(new_json['price'], '549')
+        self.assertEqual(new_json['price'], 549)
 
     def test_update_product_with_no_name(self):
         """ Update a product with missing name (required field) """
-        new_product = {'price': '500'}
+        new_product = {'price': 500}
         data = json.dumps(new_product)
         resp = self.app.put('/products/1', data=data,
                             content_type='application/json')
@@ -162,21 +163,24 @@ class TestProductServer(unittest.TestCase):
 
     def test_update_product_not_found(self):
         """ Update a product that can't be found """
-        new_product = {"name": "Polaroid camera", "price": "55"}
+        new_product = {"name": "Polaroid camera", "price": 55}
         data = json.dumps(new_product)
-        resp = self.app.put('/products/2', data=data,
+        resp = self.app.put('/products/-1', data=data,
                             content_type='application/json')
         self.assertEquals(resp.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_add_product_review(self):
         """ Review product """
         new_review = {"username": "Grumpy Grumperson",
-                      "score": 1, "detail": "Can't stand it"}
+                      "date": "2018/04/05",
+                      "score": 1,
+                      "detail": "Can't stand it"}
         data = json.dumps(new_review)
-        resp = self.app.put("products/0/review", data=data,
+        resp = self.app.put("products/1/review", data=data,
                             content_type='application/json')
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        resp = self.app.get('/products/0', content_type='application/json')
+
+        resp = self.app.get('/products/1', content_type='application/json')
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         new_json = json.loads(resp.data)
         self.assertEqual(new_json['review_list'][-1]
@@ -186,7 +190,7 @@ class TestProductServer(unittest.TestCase):
         """ Review product with bad attributes """
         new_review = {"badattribute1": "Grumpy Grumperson", "badattribute2": 1}
         data = json.dumps(new_review)
-        resp = self.app.put("products/0/review", data=data,
+        resp = self.app.put("products/1/review", data=data,
                             content_type='application/json')
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -194,7 +198,7 @@ class TestProductServer(unittest.TestCase):
         """ Review inexistent product """
         new_review = {"username": "Grumpy Grumperson", "score": 1}
         data = json.dumps(new_review)
-        resp = self.app.put("products/2/review", data=data,
+        resp = self.app.put("products/-1/review", data=data,
                             content_type='application/json')
         self.assertEquals(resp.status_code, status.HTTP_404_NOT_FOUND)
 
@@ -218,10 +222,15 @@ class TestProductServer(unittest.TestCase):
         """ Get one product with keyword """
         resp = self.app.get('/products', query_string='name=iPhone')
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        self.assertTrue(len(resp.data) > 0)
-        self.assertTrue('iPhone 8' in resp.data)
-        self.assertFalse('MacBook Pro' in resp.data)
         data = json.loads(resp.data)
+        # logging.info('data length: ' + str(len(data)))
+        self.assertTrue(len(data) > 0)
+        # logging.info('data: ' + str(data))
+
+        # note assertIn is to determine if one string is the substring of another
+        # so use resp.data instead
+        self.assertIn('iPhone 8', resp.data)
+        self.assertNotIn('MacBook Pro', resp.data)
         query_item = data[0]
         self.assertEqual(query_item['name'], 'iPhone 8')
 
@@ -249,37 +258,37 @@ class TestProductServer(unittest.TestCase):
     def test_sort_by_highest_review(self):
         """Show the product with the highest review first"""
         watch = Product(name="I Watch", price=329)
-        watch.set_id("2")
+        watch.set_id(2)
         watch.set_image_id("001")
         watch.set_description("Smart Watch")
-        watch_review_list = [Review(username="applefan", score="4", detail="OK"),
+        watch_review_list = [Review(username="applefan", score=4, detail="OK"),
                              Review(username="helloworld",
-                                    score="4", detail="As expected"),
+                                    score=4, detail="As expected"),
                              Review(username="pythonfan",
-                                    score="3", detail="So So")]
+                                    score=3, detail="So So")]
         watch.set_review_list(watch_review_list)
         server.Product.catalog.save(watch)
         self.assertEqual(watch.get_name(), "I Watch")
         self.assertEqual(watch.get_price(), 329)
-        self.assertEqual(watch.get_id(), "2")
+        self.assertEqual(watch.get_id(), 2)
         self.assertEqual(watch.get_image_id(), "001")
         self.assertEqual(watch.get_description(), "Smart Watch")
         self.assertEqual(watch.get_review_list(), watch_review_list)
         tv = Product(name="Apple TV", price=9999)
-        tv.set_id("3")
+        tv.set_id(3)
         tv.set_image_id("001")
         tv.set_description("Hi-end TV")
-        tv_review_list = [Review(username="applelover", score="5", detail="Excellent"),
-                          Review(username="tvfan", score="5",
+        tv_review_list = [Review(username="applelover", score=5, detail="Excellent"),
+                          Review(username="tvfan", score=5,
                                  detail="Loving this!!"),
                           Review(username="devops team member",
-                                 score="5", detail="Highly recommend!"),
-                          Review(username="nyu", score="5", detail="Nice!")]
+                                 score=5, detail="Highly recommend!"),
+                          Review(username="nyu", score=5, detail="Nice!")]
         tv.set_review_list(tv_review_list)
         server.Product.catalog.save(tv)
         self.assertEqual(tv.get_name(), "Apple TV")
         self.assertEqual(tv.get_price(), 9999)
-        self.assertEqual(tv.get_id(), "3")
+        self.assertEqual(tv.get_id(), 3)
         self.assertEqual(tv.get_image_id(), "001")
         self.assertEqual(tv.get_description(), "Hi-end TV")
         self.assertEqual(tv.get_review_list(), tv_review_list)
