@@ -223,6 +223,7 @@ class TestProductServer(unittest.TestCase):
         resp = self.app.get('/products', query_string='name=iPhone')
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         self.assertTrue(len(resp.data) > 0)
+        logging.info('rep.data: ' + str(json.loads(resp.data)))
         self.assertIn('iPhone 8', resp.data)
         self.assertNotIn('MacBook Pro', resp.data)
         data = json.loads(resp.data)
