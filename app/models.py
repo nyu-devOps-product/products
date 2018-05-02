@@ -165,7 +165,7 @@ class Product(object):
     catalog = Catalog()
 
     # required parameters: name, price. If id isn't specified, it will be auto-incremented when added to Catalog
-    def __init__(self, id=0, name="", price=0, image_id='', description='', review_list=None):
+    def __init__(self, id=0, name='', price=0, image_id='', description='', review_list=None):
         self.id = int(id)
         self.name = name
         self.price = int(price)
@@ -273,7 +273,7 @@ class Review(object):
     """
     def __init__(self, username='', score=0, date='', detail=''):
         self.username = username
-        self.score = score
+        self.score = int(score)
         self.date = date
         self.detail = detail
 

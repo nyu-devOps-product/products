@@ -148,7 +148,6 @@ def requires_content_type(*content_types):
 # ADD A NEW PRODUCT
 ######################################################################
 @app.route('/products', methods=['POST'])
-@requires_content_type('application/json', 'application/x-www-form-urlencoded')
 def create_product():
     """
     Creates a product and saves it.
@@ -183,18 +182,15 @@ def create_product():
 # UPDATE AN EXISTING PRODUCT
 ######################################################################
 @app.route('/products/<int:id>', methods=['PUT'])
-@requires_content_type('application/json')
 def update_products(id):
     """ Updates a product in the catalog """
+    check_content_type('application/json')
     product = Product.catalog.find(id)
-
     if not product:
         abort(HTTP_404_NOT_FOUND, "Product with id '{}' was not found.".format(id))
     product.deserialize(request.get_json())
     Product.catalog.save()
     return make_response(jsonify(product.serialize()), HTTP_200_OK)
-
-
 
 
 ######################################################################
@@ -244,6 +240,14 @@ def data_load(payload):
 def data_reset():
     """ Removes all Pets from the database """
     Product.catalog.remove_all()
+
+
+def check_content_type(content_type):
+    """ Checks that the media type is correct """
+    if request.headers['Content-Type'] == content_type:
+        return
+    app.logger.error('Invalid Content-Type: %s', request.headers['Content-Type'])
+    abort(status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, 'Content-Type must be {}'.format(content_type))
 
 
 def initialize_logging(log_level=logging.INFO):

@@ -95,7 +95,7 @@ class TestProductServer(unittest.TestCase):
         # save the current number of products for later comparison
         product_count = self.get_product_count()
         # add a new product
-        new_product = {'name': 'samsung hdtv', 'price': '499'}
+        new_product = {'name': 'samsung hdtv', 'price': 499}
         data = json.dumps(new_product)
         resp = self.app.post('/products', data=data,
                              content_type='application/json')
@@ -106,7 +106,7 @@ class TestProductServer(unittest.TestCase):
         # Check the data is correct
         new_json = json.loads(resp.data)
         self.assertEqual(new_json['name'], 'samsung hdtv')
-        self.assertEqual(new_json['price'], '499')
+        self.assertEqual(new_json['price'], 499)
         # check that count has gone up and includes the new product
         resp = self.app.get('/products')
         data = json.loads(resp.data)
@@ -117,7 +117,7 @@ class TestProductServer(unittest.TestCase):
     def test_create_product_with_id(self):
         """ Create a product passing in an id """
         # add a new product
-        new_product = {'name': 'sony vaio', 'price': '549', 'id': '2'}
+        new_product = {'name': 'sony vaio', 'price': 549, 'id': 2}
         data = json.dumps(new_product)
         resp = self.app.post('/products', data=data,
                              content_type='application/json')
@@ -128,12 +128,12 @@ class TestProductServer(unittest.TestCase):
         # Check the data is correct
         new_json = json.loads(resp.data)
         self.assertEqual(new_json['name'], 'sony vaio')
-        self.assertEqual(new_json['price'], '549')
-        self.assertEqual(new_json['id'], '2')
+        self.assertEqual(new_json['price'], 549)
+        self.assertEqual(new_json['id'], 2)
 
     def test_create_product_with_missing_required_attribute(self):
         """ Create a product with the name missing (required attribute) """
-        new_product = {'price': '550'}
+        new_product = {'price': 550}
         data = json.dumps(new_product)
         resp = self.app.post('/products', data=data,
                              content_type='application/json')
@@ -141,7 +141,7 @@ class TestProductServer(unittest.TestCase):
 
     def test_update_product(self):
         """ Update a product using its id """
-        new_product = {'name': 'sony vaio', 'price': '549'}
+        new_product = {'name': 'sony vaio', 'price': 549}
         data = json.dumps(new_product)
         # Update product with id 0:
         resp = self.app.put('/products/0', data=data,
@@ -151,11 +151,11 @@ class TestProductServer(unittest.TestCase):
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         new_json = json.loads(resp.data)
         self.assertEqual(new_json['name'], 'sony vaio')
-        self.assertEqual(new_json['price'], '549')
+        self.assertEqual(new_json['price'], 549)
 
     def test_update_product_with_no_name(self):
         """ Update a product with missing name (required field) """
-        new_product = {'price': '500'}
+        new_product = {'price': 500}
         data = json.dumps(new_product)
         resp = self.app.put('/products/1', data=data,
                             content_type='application/json')
@@ -163,7 +163,7 @@ class TestProductServer(unittest.TestCase):
 
     def test_update_product_not_found(self):
         """ Update a product that can't be found """
-        new_product = {"name": "Polaroid camera", "price": "55"}
+        new_product = {"name": "Polaroid camera", "price": 55}
         data = json.dumps(new_product)
         resp = self.app.put('/products/2', data=data,
                             content_type='application/json')
@@ -253,16 +253,16 @@ class TestProductServer(unittest.TestCase):
         watch.set_id("2")
         watch.set_image_id("001")
         watch.set_description("Smart Watch")
-        watch_review_list = [Review(username="applefan", score="4", detail="OK"),
+        watch_review_list = [Review(username="applefan", score=4, detail="OK"),
                              Review(username="helloworld",
-                                    score="4", detail="As expected"),
+                                    score=4, detail="As expected"),
                              Review(username="pythonfan",
-                                    score="3", detail="So So")]
+                                    score=3, detail="So So")]
         watch.set_review_list(watch_review_list)
         server.Product.catalog.save(watch)
         self.assertEqual(watch.get_name(), "I Watch")
         self.assertEqual(watch.get_price(), 329)
-        self.assertEqual(watch.get_id(), "2")
+        self.assertEqual(watch.get_id(), 2)
         self.assertEqual(watch.get_image_id(), "001")
         self.assertEqual(watch.get_description(), "Smart Watch")
         self.assertEqual(watch.get_review_list(), watch_review_list)
@@ -270,17 +270,17 @@ class TestProductServer(unittest.TestCase):
         tv.set_id("3")
         tv.set_image_id("001")
         tv.set_description("Hi-end TV")
-        tv_review_list = [Review(username="applelover", score="5", detail="Excellent"),
-                          Review(username="tvfan", score="5",
+        tv_review_list = [Review(username="applelover", score=5, detail="Excellent"),
+                          Review(username="tvfan", score=5,
                                  detail="Loving this!!"),
                           Review(username="devops team member",
-                                 score="5", detail="Highly recommend!"),
-                          Review(username="nyu", score="5", detail="Nice!")]
+                                 score=5, detail="Highly recommend!"),
+                          Review(username="nyu", score=5, detail="Nice!")]
         tv.set_review_list(tv_review_list)
         server.Product.catalog.save(tv)
         self.assertEqual(tv.get_name(), "Apple TV")
         self.assertEqual(tv.get_price(), 9999)
-        self.assertEqual(tv.get_id(), "3")
+        self.assertEqual(tv.get_id(), 3)
         self.assertEqual(tv.get_image_id(), "001")
         self.assertEqual(tv.get_description(), "Hi-end TV")
         self.assertEqual(tv.get_review_list(), tv_review_list)
