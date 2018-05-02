@@ -186,6 +186,17 @@ class TestProductServer(unittest.TestCase):
         self.assertEqual(new_json['review_list'][-1]
                          ['username'], 'Grumpy Grumperson')
 
+    def test_add_nonexistent_product_review(self):
+        """ Add review to an nonexistent product """
+        new_review = {"username": "Grumpy Grumperson",
+                      "date": "2018/04/05",
+                      "score": 2,
+                      "detail": "Can't stand it"}
+        data = json.dumps(new_review)
+        resp = self.app.put("products/-1/review", data=data,
+                            content_type='application/json')
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
     def test_add_product_review_with_bad_attributes(self):
         """ Review product with bad attributes """
         new_review = {"badattribute1": "Grumpy Grumperson", "badattribute2": 1}

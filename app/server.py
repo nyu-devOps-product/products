@@ -281,30 +281,7 @@ def get_products(id):
         abort(HTTP_404_NOT_FOUND, "Product with id '{}' was not found.".format(id))
 
     return make_response(jsonify(product.serialize()), HTTP_200_OK)
-
-######################################################################
-# DECORATORS
-######################################################################
-
-
-def requires_content_type(*content_types):
-    """ Use this decorator to check content type """
-    def decorator(func):
-        """ Inner decorator """
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            """ Checks that the content type is correct """
-            for content_type in content_types:
-                if request.headers['Content-Type'] == content_type:
-                    return func(*args, **kwargs)
-
-            app.logger.error('Invalid Content-Type: %s',
-                             request.headers['Content-Type'])
-            abort(HTTP_415_UNSUPPORTED_MEDIA_TYPE,
-                  'Content-Type must be {}'.format(content_types))
-        return wrapper
-    return decorator
-
+  
 
 ######################################################################
 # ADD A NEW PRODUCT
