@@ -320,6 +320,8 @@ class Review(object):
             else:
                 raise DataValidationError('Invalid product: unknown attribute ' + attribute)
 
+        return self
+
     def serialize(self):
         """ Serializes a Review into a dictionary """
         result = {"username": self.username,
