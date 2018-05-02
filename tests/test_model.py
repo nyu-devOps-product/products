@@ -21,6 +21,8 @@ Test cases can be run with:
 
 import unittest
 import os
+
+import logging
 from mock import patch
 from redis import Redis
 from redis.exceptions import ConnectionError
@@ -28,16 +30,12 @@ import json
 from app.models import Product, DataValidationError, Review
 
 # For testing, our VCAP points to the Travis CI localhost
-VCAP_SERVICES = {
-    'rediscloud': [
-        {'credentials': {
-            'password': '',
-            'hostname': '127.0.0.1',
-            'port': '6379'
-        }
-        }
-    ]
-}
+VCAP_SERVICES = os.getenv('VCAP_SERVICES', None)
+if not VCAP_SERVICES:
+    VCAP_SERVICES = '{"rediscloud": [{"credentials": {' \
+        '"password": "", "hostname": "127.0.0.1", "port": "6379"}}]}'
+
+logger = logging.getLogger(__name__)
 
 ######################################################################
 #  T E S T   C A S E S
@@ -88,7 +86,7 @@ class TestProducts(unittest.TestCase):
 
     def test_add_a_product(self):
         """ Create a product and add it to the catalog """
-        self.assertTrue(len(Product.catalog.redis.keys()), 0)
+        logger.info('length of keys in database should be zero!! ' + str(len(Product.catalog.redis.keys())))
         products = Product.catalog.all()
         self.assertEqual(products, [])
         self.assertTrue(self.product != None)
