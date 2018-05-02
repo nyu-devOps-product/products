@@ -195,7 +195,7 @@ class TestProductServer(unittest.TestCase):
         data = json.dumps(new_review)
         resp = self.app.put("products/-1/review", data=data,
                             content_type='application/json')
-        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_add_product_review_with_bad_attributes(self):
         """ Review product with bad attributes """
@@ -203,7 +203,7 @@ class TestProductServer(unittest.TestCase):
         data = json.dumps(new_review)
         resp = self.app.put("products/1/review", data=data,
                             content_type='application/json')
-        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_add_inexistent_product_review(self):
         """ Review inexistent product """
