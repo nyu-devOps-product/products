@@ -12,6 +12,7 @@ venv/
 .vagrant
 
 # Byte-compiled / optimized / DLL files
+.pytest_cache/
 __pycache__/
 *.py[cod]
 *$py.class

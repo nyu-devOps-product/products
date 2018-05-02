@@ -88,6 +88,7 @@ class TestProducts(unittest.TestCase):
 
     def test_add_a_product(self):
         """ Create a product and add it to the catalog """
+        self.assertTrue(len(Product.catalog.redis.keys()), 0)
         products = Product.catalog.all()
         self.assertEqual(products, [])
         self.assertTrue(self.product != None)
