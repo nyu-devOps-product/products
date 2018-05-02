@@ -251,7 +251,10 @@ class Product(object):
         for attribute in data:
             if attribute not in ['name', 'price']:
                 if hasattr(self, attribute):
-                    setattr(self, attribute, data[attribute])
+                    if attribute == 'review_list':
+                        setattr(self, attribute, [Review().deserialize(review_data) for review_data in data[attribute]])
+                    else:
+                        setattr(self, attribute, data[attribute])
                 else:
                     raise DataValidationError('Invalid product: unknown attribute ' + attribute)
         return self
@@ -308,6 +311,14 @@ class Review(object):
     def set_detail(self, detail):
         """ set Review detail """
         self.detail = detail
+
+    def deserialize(self, data):
+        """ Deserializes a Review from a dictionary """
+        for attribute in data:
+            if hasattr(self, attribute):
+                setattr(self, attribute, data[attribute])
+            else:
+                raise DataValidationError('Invalid product: unknown attribute ' + attribute)
 
     def serialize(self):
         """ Serializes a Review into a dictionary """
