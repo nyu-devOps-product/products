@@ -55,7 +55,7 @@ class TestProductServer(unittest.TestCase):
         server.Product.catalog.remove_all()
 
     def test_index(self):
-        """ Test the Home Page """
+        """ Test the Home Page"""
         resp = self.app.get('/')
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         self.assertIn('Products RESTful Service', resp.data)
@@ -223,8 +223,8 @@ class TestProductServer(unittest.TestCase):
         resp = self.app.get('/products', query_string='name=iPhone')
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         self.assertTrue(len(resp.data) > 0)
-        self.assertTrue('iPhone 8' in resp.data)
-        self.assertFalse('MacBook Pro' in resp.data)
+        self.assertIn('iPhone 8', resp.data)
+        self.assertNotIn('MacBook Pro', resp.data)
         data = json.loads(resp.data)
         query_item = data[0]
         self.assertEqual(query_item['name'], 'iPhone 8')
