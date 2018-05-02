@@ -185,11 +185,11 @@ class TestProducts(unittest.TestCase):
     def test_query_product(self):
         """ Query a product by Keyword """
         Product.catalog.save(self.product)
-        match = Product.catalog.query("iPhone")
+        match = Product.catalog.query("name", "iPhone")
         self.assertEqual(1, len(match))
         product1 = Product(name="asdqweiPhone123", price="649", id="0")
         Product.catalog.save(product1)
-        match = Product.catalog.query("iPhone")
+        match = Product.catalog.query("name", "iPhone")
         self.assertEqual(2, len(match))
 
     def test_get_review_avg_score(self):

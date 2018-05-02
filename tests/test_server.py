@@ -57,7 +57,7 @@ class TestProductServer(unittest.TestCase):
         """ Test the Home Page """
         resp = self.app.get('/')
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        self.assertIn('Product RESTful Service', resp.data)
+        self.assertIn('Products RESTful Service', resp.data)
 
     def test_get_product_list(self):
         """ Get a list of products """
@@ -216,7 +216,7 @@ class TestProductServer(unittest.TestCase):
 
     def test_query_one_product(self):
         """ Get one product with keyword """
-        resp = self.app.get('/products', query_string='keyword=iPhone')
+        resp = self.app.get('/products', query_string='name=iPhone')
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         self.assertTrue(len(resp.data) > 0)
         self.assertTrue('iPhone 8' in resp.data)
