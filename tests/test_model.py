@@ -21,14 +21,13 @@ Test cases can be run with:
 
 import unittest
 import os
-from unittest.mock import patch
+from mock import patch
 from redis import Redis
 from redis.exceptions import ConnectionError
 import json
 from app.models import Product, DataValidationError, Review
 
-# For testing "vcap", it could be used to connect to the Redis server on Bluemix
-# now it is set to the Travis CI localhost
+# For testing, our VCAP points to the Travis CI localhost
 VCAP_SERVICES = {
     'rediscloud': [
         {'credentials': {
@@ -39,7 +38,6 @@ VCAP_SERVICES = {
         }
     ]
 }
-
 
 ######################################################################
 #  T E S T   C A S E S
@@ -230,16 +228,6 @@ class TestProducts(unittest.TestCase):
         """ Get average score for an empty list of reviews """
         self.assertEquals(self.product.review_list, [])
         self.assertEqual(self.product.avg_score(), 0.0)
-
-    def test_passing_connection(self):
-        """ Pass in the Redis connection """
-        Product.catalog.init_db(Redis(host='127.0.0.1', port=6379))
-        self.assertIsNotNone(Product.catalog.redis)
-
-    def test_passing_bad_connection(self):
-        """ Pass in a bad Redis connection """
-        self.assertRaises(ConnectionError, Product.catalog.init_db, Redis(host='127.0.0.1', port=6300))
-        self.assertIsNone(Product.catalog.redis)
 
     @patch.dict(os.environ, {'VCAP_SERVICES': json.dumps(VCAP_SERVICES)})
     def test_vcap_services(self):
