@@ -244,7 +244,6 @@ class Product(object):
         Args:
             data (dict): A dictionary containing the product data
         """
-        data['price'] = int(data['price'])
         if isinstance(data, dict) and Product.catalog.validator.validate(data):
             self.name = data['name']
             self.price = data['price']
