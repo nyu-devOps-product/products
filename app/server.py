@@ -112,7 +112,7 @@ def delete_products(id):
 ######################################################################
 @app.route('/products', methods=['GET'])
 def list_products():
-    """ 
+    """
     Retrieves a list of products from the database
     This endpoint will return all Products unless a query parameter is specificed
     ---
@@ -421,7 +421,8 @@ def create_product():
     else:
         app.logger.info('Processing JSON data')
         data = request.get_json()
-
+        if 'price' in data:
+                data['price'] = int(data['price'])
     product = Product()
     product.deserialize(data)
     Product.catalog.save(product)  # this will auto generate an id for product
@@ -477,7 +478,7 @@ def update_products(id):
             description:
               type: string
               description: description for the product
-            
+
     responses:
       200:
         description: Product Updated
@@ -500,7 +501,7 @@ def update_products(id):
 ######################################################################
 @app.route('/products/<int:id>/review', methods=['PUT'])
 def review_products(id):
-    """ Adds a review to product in the catalog 
+    """ Adds a review to product in the catalog
     This endpoint will update a Product's review based the body that is posted
     ---
     tags:
@@ -539,7 +540,7 @@ def review_products(id):
             detail:
               type: string
               description: review detail description
-                  
+
     responses:
       200:
         description: Review Updated
