@@ -58,6 +58,7 @@ class Catalog:
         """ Returns all of the Products in the database """
         # return a `copy` of data
         results = []
+        logger.info('Again, length of keys in database should be zero!! ' + str(len(Product.catalog.redis.keys())))
         for key in self.redis.keys():
             if key != 'index':  # filter out our id index
                 data = pickle.loads(self.redis.get(key))
