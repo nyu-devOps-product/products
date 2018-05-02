@@ -84,12 +84,12 @@ class Catalog:
         for key in self.redis.keys():
             if key != 'index':  # filter out our id index
                 data = pickle.loads(self.redis.get(key))
-                logging.info('try to match with: ' + str(data[keyword]))
+                # logging.info('try to match with: ' + str(data[keyword]))
                 match = re.search(pattern, str(data[keyword]), re.IGNORECASE)
                 if match:
                     logging.info('so this is a match!')
                     found.append(Product(id=data['id']).deserialize(data))
-        logging.info('found {0} matches!'.format(len(found)))
+        # logging.info('found {0} matches!'.format(len(found)))
         return found
 
     def remove_all(self):

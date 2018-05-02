@@ -85,14 +85,14 @@ def list_products():
         temp = Product.catalog.all()
         for keyword in request.args:
             if keyword != 'sort':
-                logging.info('set(temp) before search: ' + str(set(temp)))
+                # logging.info('set(temp) before search: ' + str(set(temp)))
                 matches = set(Product.catalog.query(keyword, request.args[keyword]))
-                logging.info('matches: ' + str(matches))
+                # logging.info('matches: ' + str(matches))
                 set1 = set(x.id for x in temp)
                 set2 = set(x.id for x in matches)
                 intersection_ids = set1 & set2
                 temp = [item for item in matches if item.id in intersection_ids]
-                logging.info('set(temp) after search: ' + str(set(temp)))
+                # logging.info('set(temp) after search: ' + str(set(temp)))
         results = temp
     else:
         results = Product.catalog.all()

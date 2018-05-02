@@ -223,9 +223,9 @@ class TestProductServer(unittest.TestCase):
         resp = self.app.get('/products', query_string='name=iPhone')
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         data = json.loads(resp.data)
-        logging.info('data length: ' + str(len(data)))
+        # logging.info('data length: ' + str(len(data)))
         self.assertTrue(len(data) > 0)
-        logging.info('data: ' + str(data))
+        # logging.info('data: ' + str(data))
 
         # note assertIn is to determine if one string is the substring of another
         # so use resp.data instead
