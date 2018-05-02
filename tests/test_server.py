@@ -189,7 +189,7 @@ class TestProductServer(unittest.TestCase):
         """ Review product with bad attributes """
         new_review = {"badattribute1": "Grumpy Grumperson", "badattribute2": 1}
         data = json.dumps(new_review)
-        resp = self.app.put("products/0/review", data=data,
+        resp = self.app.put("products/1/review", data=data,
                             content_type='application/json')
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
 

@@ -211,7 +211,7 @@ def review_products(id):
         review_list = product.get_review_list()
         review_list.append(review)
         product.set_review_list(review_list)
-        product.catalog.save(product)
+        Product.catalog.save(product)
         message = product.serialize()
         return_code = HTTP_200_OK
     else:
