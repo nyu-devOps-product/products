@@ -88,7 +88,6 @@ def list_products():
                 temp = list(set(temp) & set(
                     Product.catalog.query(keyword, request.args[keyword])))
         results = temp
-        logging.info(str(results[0]))
     else:
         results = Product.catalog.all()
     products = results

@@ -80,13 +80,13 @@ class Catalog:
     def query(self, keyword, value):
         """ Find Products by keyword """
         found = []
-        pattern = r'.*?{0}.*?'.format(value)
-        for product in self.all():
-            fields = product.serialize()
-            match = re.search(pattern, str(fields[keyword]))
-            if match:
-                found.append(product)
-
+        pattern = r'(?i).*?{0}.*?'.format(value)
+        for key in self.redis.keys():
+            if key != 'index':  # filter out our id index
+                data = pickle.loads(self.redis.get(key))
+                match = re.search(pattern, str(data[keyword]))
+                if match:
+                    found.append(Product(id=data['id']).deserialize(data))
         return found
 
     def remove_all(self):
