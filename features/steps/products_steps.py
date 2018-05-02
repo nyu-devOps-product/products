@@ -12,7 +12,10 @@ from compare import expect, ensure
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions
+<<<<<<< HEAD
 import server
+=======
+>>>>>>> master
 
 WAIT_SECONDS = 30
 BASE_URL = getenv('BASE_URL', 'http://localhost:5000/')
@@ -23,6 +26,10 @@ def step_impl(context):
     headers = {'Content-Type': 'application/json'}
     # Get all products and delete them from catalog:
     context.resp = requests.get(context.base_url + '/products')
+<<<<<<< HEAD
+=======
+    # Delete any product that may be in the catalog
+>>>>>>> master
     for i in json.loads(context.resp.content):
         id = i['id']
         context.resp = requests.delete(context.base_url + '/products/' + str(id), headers=headers)
@@ -35,9 +42,15 @@ def step_impl(context):
     # Parse products from products.feature and add them to catalog:
     for row in context.table:
         data = {
+<<<<<<< HEAD
             "id": row['id'],
             "name": row['name'],
             "price": row['price'],
+=======
+            "id": int(row['id']),
+            "name": row['name'],
+            "price": int(row['price']),
+>>>>>>> master
             "image_id": row['image_id'],
             "description": row['description']
             }

@@ -65,3 +65,29 @@ Scenario: Delete a product
     Then I should see "iPhone" in the results
     And I should see "Samsung" in the results
     And I should not see "Speaker" in the results
+<<<<<<< HEAD
+=======
+
+Scenario: Query a product by keyword
+    When I visit the "Home Page"
+    And I change "Name" to "Samsung"
+    And I press the "Search" button
+    Then I should see "Samsung" in the results
+    And I should not see "Speaker" in the results
+    And I should not see "iPhone" in the results
+
+Scenario: Action on a product - Post review
+    When I visit the "Home Page"
+    And I change "Id" to "1"
+    And I press the "Retrieve" button
+    Then I should see "iPhone" in the "Name" field
+    When I change "Username" to "Grumpy_user"
+    And I change "Score" to "1"
+    And I press the "Review" button
+    And I press the "Clear" button
+    And I change "Name" to "iPhone"
+    And I press the "Search" button
+    Then I should see "iPhone" in the results
+    And I should see "username: Grumpy_user" in the results
+    And I should see "score: 1" in the results
+>>>>>>> master

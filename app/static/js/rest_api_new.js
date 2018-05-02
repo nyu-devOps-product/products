@@ -21,7 +21,11 @@ $(function () {
         $("#product_price").val("");
         $("#product_image").val("");
         $("#product_description").val("");
-        // $("#product_review").val("");
+        $("#product_sort").val("");
+        $("#product_username").val("");
+        $("#product_score").val("");
+        $("#product_date").val("");
+        $("#product_detail").val("");
     }
 
     // Updates the flash message area
@@ -41,6 +45,16 @@ $(function () {
         var image_id = $("#product_image").val();
         var description = $("#product_description").val();
         // var review = $("#product_review").val();
+
+        if(name == null || name == undefined || name.length <= 0) {
+          flash_message("Name attribute cannot be empty")
+          return
+        }
+
+        if(price == null || price == undefined || price.length <= 0) {
+          flash_message("Price attribute cannot be empty")
+          return
+        }
 
         var data = {
             "name": name,
@@ -162,6 +176,42 @@ $(function () {
     });
 
     // ****************************************
+    // Update a review
+    // ****************************************
+    $("#review-btn").click(function () {
+
+        var product_id = $("#product_id").val();
+        var username = $("#product_username").val();
+        var score = $("#product_score").val();
+        var date = $("#product_date").val();
+        var detail = $("#product_detail").val();
+
+        var data = {
+            "username": username,
+            "score": score,
+            "date": date,
+            "detail": detail
+        };
+
+        var ajax = $.ajax({
+                type: "PUT",
+                url: "/products/" + product_id + "/review",
+                contentType:"application/json",
+                data: JSON.stringify(data)
+            })
+
+        ajax.done(function(res){
+            update_form_data(res)
+            flash_message("Success")
+        });
+
+        ajax.fail(function(res){
+            flash_message(res.responseJSON.message)
+        });
+
+    });
+
+    // ****************************************
     // Clear the form
     // ****************************************
 
@@ -174,11 +224,11 @@ $(function () {
     // ****************************************
 
     $("#search-btn").click(function () {
-        var name = $("#product_name").val();
-        var price = $("#product_price").val();
-        var image_id = $("#product_image").val();
-        var description = $("#product_description").val();
-        // var review_list = $("#product_review").val();
+        var name = $("#product_name").val().trim().toLowerCase();
+        var price = $("#product_price").val().trim().toLowerCase();
+        var image_id = $("#product_image").val().trim().toLowerCase();
+        var description = $("#product_description").val().trim().toLowerCase();
+        var sort = $("#product_sort").val();
 
         var queryString = "";
 
@@ -206,13 +256,14 @@ $(function () {
                 queryString += 'description=' + description
             }
         }
-        // if (review_list) {
-        //     if (queryString.length > 0) {
-        //         queryString += '&review_list=' + review_list
-        //     } else {
-        //         queryString += 'review_list=' + review_list
-        //     }
-        // }
+
+        if (sort) {
+            if (queryString.length > 0) {
+                queryString += '&sort=' + sort
+            } else {
+                queryString += 'sort=' + sort
+            }
+        }
 
         var ajax = $.ajax({
             type: "GET",
@@ -229,15 +280,22 @@ $(function () {
             header += '<th style="width:10%">ID</th>'
             header += '<th style="width:20%">Name</th>'
             header += '<th style="width:20%">Price</th>'
-            header += '<th style="width:10%">Image_id</th>'
+            header += '<th style="width:20%">Image_id</th>'
             header += '<th style="width:20%">Description</th>'
-            // header += '<th style="width:20%">Review_list</th></tr>'
+            header += '<th style="width:20%">Review_list</th></tr>'
             $("#search_results").append(header);
             for(var i = 0; i < res.length; i++) {
                 product = res[i];
+                reviews = "";
+                for(var j = 0; j < product.review_list.length; j++) {
+                    reviews += "username: " + product.review_list[j].username + "<br>";
+                    reviews += "score: " + product.review_list[j].score + "<br>";
+                    reviews += "date: " + product.review_list[j].date + "<br>";
+                    reviews += "detail: " + product.review_list[j].detail + "<br>";
+                    reviews += "<br>";
+                }
                 var row = "<tr><td>"+product.id+"</td><td>"+product.name+"</td><td>"+product.price+"</td><td>"+product.image_id+
-                product.description+"</td><td>";
-                // +product.review_list+"</td></tr>";
+                "</td><td>"+product.description+"</td><td>"+ reviews + "</td></tr>";
                 $("#search_results").append(row);
             }
 
