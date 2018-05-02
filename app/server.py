@@ -30,8 +30,8 @@ app.config['SWAGGER'] = {
     "specs": [
         {
             "version": "1.0.0",
-            "title": "DevOps Swagger Pet App",
-            "description": "This is a sample server Petstore server.",
+            "title": "DevOps Swagger Products App",
+            "description": "This is a sample server Products server.",
             "endpoint": 'v1_spec',
             "route": '/v1/spec'
         }
@@ -193,37 +193,25 @@ def list_products():
 @app.route('/products/<int:id>', methods=['GET'])
 def get_products(id):
     """ Retrieves a Product with a specific id
-    This endpoint will create a Product based the data in the body that is posted
+    This endpoint will return a Product based on it's id
     ---
     tags:
       - Products
-    consumes:
-      - application/json
     produces:
       - application/json
     parameters:
-      - in: body
-        name: body
+      - name: id
+        in: path
+        description: ID of product to retrieve
+        type: integer
         required: true
-        schema:
-          id: data
-          required:
-            - name
-            - category
-          properties:
-            name:
-              type: string
-              description: name for the Product
-            category:
-              type: string
-              description: the category of product (iphone, tv, etc.)
     responses:
-      201:
-        description: Product created
+      200:
+        description: Product returned
         schema:
           $ref: '#/definitions/Product'
-      400:
-        description: Bad Request (the posted data was not valid)
+      404:
+        description: Product not found
     """
     product = Product.catalog.find(id)
     if product:
@@ -258,14 +246,44 @@ def create_product():
           id: data
           required:
             - name
-            - category
+            - price
+            - id
+            - image_id
+            - description
+            - review_list
           properties:
             name:
               type: string
-              description: name for the Product
-            category:
+              description: name for the product
+            price:
               type: string
-              description: the category of product (iphone, tv, etc.)
+              description: the price of product
+            id:
+              type: integer
+              description: id for the product
+            image_id:
+              type: integer
+              description: image id for the product
+            description:
+              type: string
+              description: description for the product
+            review_list:
+              type: array
+              items:
+                type: object
+                properties:
+                  username:
+                    type: string
+                    description: username for the reviewer
+                  score:
+                    type: integer
+                    description: score the product receive
+                  date:
+                    type: string
+                    description: time that product receive review
+                  detail:
+                    type: string
+                    description: review detail description
     responses:
       201:
         description: Product created
@@ -322,7 +340,7 @@ def update_products(id):
               description: name for the Product
             category:
               type: string
-              description: the category of product (iphone, tv, etc.)
+              description: the category of product (iphone, macbook, etc.)
     responses:
       200:
         description: Pet Updated
