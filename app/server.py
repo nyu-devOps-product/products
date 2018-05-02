@@ -12,6 +12,7 @@ DELETE /products/{id} - Removes a product from the database that matches the id
 import sys
 import logging
 from functools import wraps
+from flasgger import Swagger
 from flask import Flask, jsonify, request, url_for, make_response, abort
 from flask_api import status    # HTTP Status Codes
 from werkzeug.exceptions import NotFound
@@ -26,6 +27,23 @@ from . import app
 app = Flask(__name__)
 app.config['LOGGING_LEVEL'] = logging.INFO
 
+
+# Configure Swagger before initilaizing it
+app.config['SWAGGER'] = {
+    "swagger_version": "2.0",
+    "specs": [
+        {
+            "version": "1.0.0",
+            "title": "DevOps Swagger Products App",
+            "description": "This is a sample server Products server.",
+            "endpoint": 'v1_spec',
+            "route": '/v1/spec'
+        }
+    ]
+}
+
+# Initialize Swagger after configuring it
+Swagger(app)
 
 # Status Codes
 HTTP_200_OK = 200
@@ -68,7 +86,22 @@ def index():
 ######################################################################
 @app.route('/products/<int:id>', methods=['DELETE'])
 def delete_products(id):
-    """ Removes a Product from the database that matches the id """
+    """ Removes a Product from the database that matches the id
+    This endpoint will delete a Product based the id specified in the path
+    ---
+    tags:
+      - Products
+    description: Deletes a Product from the database
+    parameters:
+      - name: id
+        in: path
+        description: ID of product to delete
+        type: integer
+        required: true
+    responses:
+      204:
+        description: Product deleted
+    """
     Product.catalog.delete(id)
 
     return make_response('', HTTP_204_NO_CONTENT)
@@ -79,7 +112,100 @@ def delete_products(id):
 ######################################################################
 @app.route('/products', methods=['GET'])
 def list_products():
-    """ Retrieves a list of products from the database """
+    """ 
+    Retrieves a list of products from the database
+    This endpoint will return all Products unless a query parameter is specificed
+    ---
+    tags:
+      - Products
+    description: The Products endpoint allows you to query Products
+    parameters:
+      - in: query
+        name: id
+        type: integer
+        description: query the product that match the id
+      - in: query
+        name: name
+        type: string
+        description: query the product that match the name
+      - in: query
+        name: price
+        type: number
+        format: float
+        description: query the product that match the price
+      - in: query
+        name: image_id
+        type: integer
+        description: query the product that match the image id
+      - in: query
+        name: description
+        type: string
+        description: query the product that match the description
+      - in: query
+        name: sort
+        type: string
+        description: use "price", "price-", "review", "name", "name-" to sort the product list
+    definitions:
+      Product:
+        type: object
+        properties:
+          name:
+            type: string
+            description: name for the product
+          price:
+            type: number
+            format: float
+            description: the price of product
+          id:
+            type: integer
+            description: id for the product
+          image_id:
+            type: integer
+            description: image id for the product
+          description:
+            type: string
+            description: description for the product
+          review_list:
+            type: array
+            items:
+              type: object
+              properties:
+                username:
+                  type: string
+                  description: username for the reviewer
+                score:
+                  type: integer
+                  description: score the product receive
+                date:
+                  type: string
+                  description: time that product receive review
+                detail:
+                  type: string
+                  description: review detail description
+      Review:
+        type: object
+        properties:
+          username:
+            type: string
+            description: username for the reviewer
+          score:
+            type: integer
+            description: score the product receive
+          date:
+            type: string
+            description: time that product receive review
+          detail:
+            type: string
+            description: review detail description
+    responses:
+      200:
+        description: An array of Products
+        schema:
+          type: array
+          items:
+            schema:
+              $ref: '#/definitions/Product'
+    """
     results = []
     if request.args:
         temp = Product.catalog.all()
@@ -122,7 +248,27 @@ def list_products():
 ######################################################################
 @app.route('/products/<int:id>', methods=['GET'])
 def get_products(id):
-    """ Retrieves a Product with a specific id """
+    """ Retrieves a Product with a specific id
+    This endpoint will return a Product based on it's id
+    ---
+    tags:
+      - Products
+    produces:
+      - application/json
+    parameters:
+      - name: id
+        in: path
+        description: ID of product to retrieve
+        type: integer
+        required: true
+    responses:
+      200:
+        description: Product returned
+        schema:
+          $ref: '#/definitions/Product'
+      404:
+        description: Product not found
+    """
     product = Product.catalog.find(id)
     if not product:
         abort(HTTP_404_NOT_FOUND, "Product with id '{}' was not found.".format(id))
@@ -155,10 +301,110 @@ def requires_content_type(*content_types):
 ######################################################################
 @app.route('/products', methods=['POST'])
 def create_product():
-    """
-    Creates a product and saves it.
-    This endpoint will create a Product based the data in the body that is posted
-    or data that is sent via an html form post.
+    """ Creates a product and saves it
+    This endpoint will create a Product based the data in the body that is posted!!
+    ---
+    tags:
+      - Products
+    consumes:
+      - application/json
+    produces:
+      - application/json
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          required:
+            - name
+            - price
+            - id
+            - image_id
+            - description
+          properties:
+            name:
+              type: string
+              description: name for the product
+            price:
+              type: number
+              format: float
+              description: the price of product
+            id:
+              type: integer
+              description: id for the product
+            image_id:
+              type: integer
+              description: image id for the product
+            description:
+              type: string
+              description: description for the product
+            review_list:
+              type: array
+              default: []
+              items:
+                type: object
+                properties:
+                  username:
+                    type: string
+                    description: username for the reviewer
+                  score:
+                    type: integer
+                    default: 100
+                    description: score the product receive
+                  date:
+                    type: string
+                    description: time that product receive review
+                  detail:
+                    type: string
+                    description: review detail description
+    responses:
+      201:
+        description: Product created
+        schema:
+          required:
+            - name
+            - price
+            - id
+            - image_id
+            - description
+          properties:
+            name:
+              type: string
+              description: name for the product
+            price:
+              type: number
+              format: float
+              description: the price of product
+            id:
+              type: integer
+              description: id for the product
+            image_id:
+              type: integer
+              description: image id for the product
+            description:
+              type: string
+              description: description for the product
+            review_list:
+              type: array
+              default: []
+              items:
+                type: object
+                properties:
+                  username:
+                    type: string
+                    description: username for the reviewer
+                  score:
+                    type: integer
+                    default: 100
+                    description: score the product receive
+                  date:
+                    type: string
+                    description: time that product receive review
+                  detail:
+                    type: string
+                    description: review detail description
+      400:
+        description: Bad Request (the posted data was not valid)
     """
     data = {}
     # Check for form submission data
@@ -189,7 +435,57 @@ def create_product():
 ######################################################################
 @app.route('/products/<int:id>', methods=['PUT'])
 def update_products(id):
-    """ Updates a product in the catalog """
+    """ Updates a product in the catalog
+    This endpoint will update a Product based the body that is posted
+    ---
+    tags:
+      - Products
+    consumes:
+      - application/json
+    produces:
+      - application/json
+    parameters:
+      - name: id
+        in: path
+        description: ID of product to retrieve
+        type: integer
+        required: true
+      - in: body
+        name: body
+        schema:
+          required:
+            - name
+            - price
+            - id
+            - image_id
+            - description
+            - review_list
+          properties:
+            name:
+              type: string
+              description: name for the product
+            price:
+              type: number
+              format: float
+              description: the price of product
+            id:
+              type: integer
+              description: id for the product
+            image_id:
+              type: integer
+              description: image id for the product
+            description:
+              type: string
+              description: description for the product
+            
+    responses:
+      200:
+        description: Product Updated
+        schema:
+          $ref: '#/definitions/Product'
+      400:
+        description: Bad Request (the posted data was not valid)
+    """
     check_content_type('application/json')
     product = Product.catalog.find(id)
     if not product:
@@ -204,7 +500,54 @@ def update_products(id):
 ######################################################################
 @app.route('/products/<int:id>/review', methods=['PUT'])
 def review_products(id):
-    """ Adds a review to product in the catalog """
+    """ Adds a review to product in the catalog 
+    This endpoint will update a Product's review based the body that is posted
+    ---
+    tags:
+      - Products
+    paths:
+      - /products/<int:id>/review
+    consumes:
+      - application/json
+    produces:
+      - application/json
+    parameters:
+      - name: id
+        in: path
+        description: ID of product to retrieve
+        type: integer
+        required: true
+      - in: body
+        name: body
+        schema:
+
+          required:
+            - username
+            - score
+            - date
+            - detail
+          properties:
+            username:
+              type: string
+              description: username for the reviewer
+            score:
+              type: integer
+              description: score the product receive
+            date:
+              type: string
+              description: time that product receive review
+            detail:
+              type: string
+              description: review detail description
+                  
+    responses:
+      200:
+        description: Review Updated
+        schema:
+          $ref: '#/definitions/Review'
+      400:
+        description: Bad Request (the posted data was not valid)
+    """
     product = Product.catalog.find(id)
     if product:
         payload = request.get_json()
