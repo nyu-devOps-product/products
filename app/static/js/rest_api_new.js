@@ -278,9 +278,9 @@ $(function () {
             $("#search_results").append('<table class="table-striped">');
             var header = '<tr>'
             header += '<th style="width:10%">ID</th>'
-            header += '<th style="width:10%">Name</th>'
-            header += '<th style="width:10%">Price</th>'
-            header += '<th style="width:10%">Image_id</th>'
+            header += '<th style="width:20%">Name</th>'
+            header += '<th style="width:20%">Price</th>'
+            header += '<th style="width:20%">Image_id</th>'
             header += '<th style="width:20%">Description</th>'
             header += '<th style="width:20%">Review_list</th></tr>'
             $("#search_results").append(header);
