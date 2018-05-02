@@ -22,6 +22,7 @@ $(function () {
         $("#product_image").val("");
         $("#product_description").val("");
         // $("#product_review").val("");
+        $("#product_sort").val("");
     }
 
     // Updates the flash message area
@@ -41,6 +42,16 @@ $(function () {
         var image_id = $("#product_image").val();
         var description = $("#product_description").val();
         // var review = $("#product_review").val();
+
+        if(name == null || name == undefined || name.length <= 0) {
+          flash_message("Name attribute cannot be empty")
+          return
+        }
+
+        if(price == null || price == undefined || price.length <= 0) {
+          flash_message("Price attribute cannot be empty")
+          return
+        }
 
         var data = {
             "name": name,
@@ -174,11 +185,12 @@ $(function () {
     // ****************************************
 
     $("#search-btn").click(function () {
-        var name = $("#product_name").val();
-        var price = $("#product_price").val();
-        var image_id = $("#product_image").val();
-        var description = $("#product_description").val();
+        var name = $("#product_name").val().trim().toLowerCase();
+        var price = $("#product_price").val().trim().toLowerCase();
+        var image_id = $("#product_image").val().trim().toLowerCase();
+        var description = $("#product_description").val().trim().toLowerCase();
         // var review_list = $("#product_review").val();
+        var sort = $("#product_sort").val();
 
         var queryString = "";
 
@@ -213,6 +225,13 @@ $(function () {
         //         queryString += 'review_list=' + review_list
         //     }
         // }
+        if (sort) {
+            if (queryString.length > 0) {
+                queryString += '&sort=' + sort
+            } else {
+                queryString += 'sort=' + sort
+            }
+        }
 
         var ajax = $.ajax({
             type: "GET",
@@ -227,17 +246,16 @@ $(function () {
             $("#search_results").append('<table class="table-striped">');
             var header = '<tr>'
             header += '<th style="width:10%">ID</th>'
-            header += '<th style="width:20%">Name</th>'
-            header += '<th style="width:20%">Price</th>'
+            header += '<th style="width:10%">Name</th>'
+            header += '<th style="width:10%">Price</th>'
             header += '<th style="width:10%">Image_id</th>'
             header += '<th style="width:20%">Description</th>'
-            // header += '<th style="width:20%">Review_list</th></tr>'
+            header += '<th style="width:20%">Review_list</th></tr>'
             $("#search_results").append(header);
             for(var i = 0; i < res.length; i++) {
                 product = res[i];
                 var row = "<tr><td>"+product.id+"</td><td>"+product.name+"</td><td>"+product.price+"</td><td>"+product.image_id+
-                product.description+"</td><td>";
-                // +product.review_list+"</td></tr>";
+                "</td><td>"+product.description+"</td><td>"+product.review_list+"</td></tr>";
                 $("#search_results").append(row);
             }
 

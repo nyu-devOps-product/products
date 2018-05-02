@@ -77,6 +77,20 @@
               -->
 
               <div class="form-group">
+                <label class="control-label col-sm-2" for="product_sort">Sort:</label>
+                <div class="col-sm-10">
+                  <select class="form-control" id="product_sort">
+                      <option value="" selected></option>
+                      <option value="price">price</option>
+                      <option value="price-">price-</option>
+                      <option value="name">name</option>
+                      <option value="name-">name-</option>
+                      <option value="review">review</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
                 <div class="col-sm-offset-2 col-sm-10">
                   <button type="submit" class="btn btn-primary" id="search-btn">Search</button>
                   <button type="submit" class="btn btn-primary" id="clear-btn">Clear</button>
@@ -96,7 +110,7 @@
                 <th class="col-md-4">Name</th>
                 <th class="col-md-4">Price</th>
                 <th class="col-md-3">Image_id</th>
-                <th class="col-md-3">Description</th>
+                <th class="col-md-4">Description</th>
                 <!-- <th class="col-md-3">Review_List</th> -->
             </tr>
             </thead>

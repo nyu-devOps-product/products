@@ -79,9 +79,13 @@ def delete_products(id):
 def list_products():
     """ Retrieves a list of products from the database """
     results = []
-    keyword = request.args.get('keyword')
-    if keyword:
-        results = Product.catalog.query(keyword)
+    if request.args:
+        temp = Product.catalog.all()
+        for keyword in request.args:
+            if keyword != 'sort':
+                temp = list(set(temp) & set(
+                    Product.catalog.query(keyword, request.args[keyword])))
+        results = temp
     else:
         results = Product.catalog.all()
     products = results
