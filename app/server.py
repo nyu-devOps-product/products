@@ -85,6 +85,7 @@ def list_products():
         temp = Product.catalog.all()
         for keyword in request.args:
             if keyword != 'sort':
+                logging.info('set(temp): ' + str(set(temp)))
                 temp = list(set(temp) & set(
                     Product.catalog.query(keyword, request.args[keyword])))
         results = temp
