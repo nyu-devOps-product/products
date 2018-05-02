@@ -63,6 +63,8 @@ import error_handlers
 ######################################################################
 # GET HEALTH CHECK
 ######################################################################
+
+
 @app.route('/healthcheck')
 def healthcheck():
     """ Let them know our heart is still beating """
@@ -212,7 +214,8 @@ def list_products():
         for keyword in request.args:
             if keyword != 'sort':
                 # logging.info('set(temp) before search: ' + str(set(temp)))
-                matches = set(Product.catalog.query(keyword, request.args[keyword]))
+                matches = set(Product.catalog.query(
+                    keyword, request.args[keyword]))
                 # logging.info('matches: ' + str(matches))
                 set1 = set(x.id for x in temp)
                 set2 = set(x.id for x in matches)
@@ -226,19 +229,23 @@ def list_products():
     sort_type = request.args.get('sort')
     if sort_type == 'price':
         """ Retrieves a list of products with the lowest price showed first from the database """
-        results = sorted(products, key=lambda p: float(p.get_price()), reverse=False)
+        results = sorted(products, key=lambda p: float(
+            p.get_price()), reverse=False)
     elif sort_type == 'price-':
         """ Retrieves a list of products with the highest price showed first from the database """
-        results = sorted(products, key=lambda p: float(p.get_price()), reverse=True)
+        results = sorted(products, key=lambda p: float(
+            p.get_price()), reverse=True)
     elif sort_type == 'review':
         """ Retrieves a list of products with the highest review showed first from the database """
         results = sorted(products, key=lambda p: p.avg_score(), reverse=True)
     elif sort_type == 'name':
         """ Retrieves a list of products in alphabetical order from the database """
-        results = sorted(products, key=lambda p: p.get_name().lower(), reverse=False)
+        results = sorted(
+            products, key=lambda p: p.get_name().lower(), reverse=False)
     elif sort_type == 'name-':
         """ Retrieves a list of products in reverse alphabetical order from the database """
-        results = sorted(products, key=lambda p: p.get_name().lower(), reverse=True)
+        results = sorted(
+            products, key=lambda p: p.get_name().lower(), reverse=True)
 
     return make_response(jsonify([product.serialize() for product in results]), HTTP_200_OK)
 
@@ -278,6 +285,8 @@ def get_products(id):
 ######################################################################
 # DECORATORS
 ######################################################################
+
+
 def requires_content_type(*content_types):
     """ Use this decorator to check content type """
     def decorator(func):
@@ -289,7 +298,8 @@ def requires_content_type(*content_types):
                 if request.headers['Content-Type'] == content_type:
                     return func(*args, **kwargs)
 
-            app.logger.error('Invalid Content-Type: %s', request.headers['Content-Type'])
+            app.logger.error('Invalid Content-Type: %s',
+                             request.headers['Content-Type'])
             abort(HTTP_415_UNSUPPORTED_MEDIA_TYPE,
                   'Content-Type must be {}'.format(content_types))
         return wrapper
@@ -422,13 +432,13 @@ def create_product():
         app.logger.info('Processing JSON data')
         data = request.get_json()
         if 'price' in data:
-                data['price'] = int(data['price'])
+            data['price'] = int(data['price'])
     product = Product()
     product.deserialize(data)
     Product.catalog.save(product)  # this will auto generate an id for product
     message = product.serialize()
     return make_response(jsonify(message), HTTP_201_CREATED,
-                  {'Location': url_for('get_products', id=product.id, _external=True)})
+                         {'Location': url_for('get_products', id=product.id, _external=True)})
 
 
 ######################################################################
@@ -491,7 +501,11 @@ def update_products(id):
     product = Product.catalog.find(id)
     if not product:
         abort(HTTP_404_NOT_FOUND, "Product with id '{}' was not found.".format(id))
-    product.deserialize(request.get_json())
+
+    data = request.get_json()
+    if 'price' in data:
+        data['price'] = int(data['price'])
+    product.deserialize(data)
     Product.catalog.save(product)
     return make_response(jsonify(product.serialize()), HTTP_200_OK)
 
@@ -597,8 +611,10 @@ def check_content_type(content_type):
     """ Checks that the media type is correct """
     if request.headers['Content-Type'] == content_type:
         return
-    app.logger.error('Invalid Content-Type: %s', request.headers['Content-Type'])
-    abort(status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, 'Content-Type must be {}'.format(content_type))
+    app.logger.error('Invalid Content-Type: %s',
+                     request.headers['Content-Type'])
+    abort(status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+          'Content-Type must be {}'.format(content_type))
 
 
 def initialize_logging(log_level=logging.INFO):
