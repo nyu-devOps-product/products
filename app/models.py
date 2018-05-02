@@ -182,7 +182,7 @@ class Product(object):
 
     def set_id(self, id):
         """ set product id """
-        self.id = id
+        self.id = int(id)
 
     def get_name(self):
         """ Returns product name """
@@ -198,7 +198,7 @@ class Product(object):
 
     def set_price(self, price):
         """ set product price """
-        self.price = price
+        self.price = int(price)
 
     def get_image_id(self):
         """ Returns product image_id """

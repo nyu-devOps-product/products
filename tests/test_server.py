@@ -165,7 +165,7 @@ class TestProductServer(unittest.TestCase):
         """ Update a product that can't be found """
         new_product = {"name": "Polaroid camera", "price": 55}
         data = json.dumps(new_product)
-        resp = self.app.put('/products/2', data=data,
+        resp = self.app.put('/products/-1', data=data,
                             content_type='application/json')
         self.assertEquals(resp.status_code, status.HTTP_404_NOT_FOUND)
 
@@ -174,10 +174,10 @@ class TestProductServer(unittest.TestCase):
         new_review = {"username": "Grumpy Grumperson",
                       "score": 1, "detail": "Can't stand it"}
         data = json.dumps(new_review)
-        resp = self.app.put("products/0/review", data=data,
+        resp = self.app.put("products/1/review", data=data,
                             content_type='application/json')
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        resp = self.app.get('/products/0', content_type='application/json')
+        resp = self.app.get('/products/1', content_type='application/json')
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         new_json = json.loads(resp.data)
         self.assertEqual(new_json['review_list'][-1]
@@ -195,7 +195,7 @@ class TestProductServer(unittest.TestCase):
         """ Review inexistent product """
         new_review = {"username": "Grumpy Grumperson", "score": 1}
         data = json.dumps(new_review)
-        resp = self.app.put("products/2/review", data=data,
+        resp = self.app.put("products/-1/review", data=data,
                             content_type='application/json')
         self.assertEquals(resp.status_code, status.HTTP_404_NOT_FOUND)
 
@@ -250,7 +250,7 @@ class TestProductServer(unittest.TestCase):
     def test_sort_by_highest_review(self):
         """Show the product with the highest review first"""
         watch = Product(name="I Watch", price=329)
-        watch.set_id("2")
+        watch.set_id(2)
         watch.set_image_id("001")
         watch.set_description("Smart Watch")
         watch_review_list = [Review(username="applefan", score=4, detail="OK"),
@@ -267,7 +267,7 @@ class TestProductServer(unittest.TestCase):
         self.assertEqual(watch.get_description(), "Smart Watch")
         self.assertEqual(watch.get_review_list(), watch_review_list)
         tv = Product(name="Apple TV", price=9999)
-        tv.set_id("3")
+        tv.set_id(3)
         tv.set_image_id("001")
         tv.set_description("Hi-end TV")
         tv_review_list = [Review(username="applelover", score=5, detail="Excellent"),
