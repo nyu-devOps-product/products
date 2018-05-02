@@ -222,12 +222,15 @@ class TestProductServer(unittest.TestCase):
         """ Get one product with keyword """
         resp = self.app.get('/products', query_string='name=iPhone')
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        logging.info('resp.data length: ' + str(len(json.loads(resp.data))))
-        self.assertTrue(len(resp.data) > 0)
-        logging.info('resp.data: ' + str(json.loads(resp.data)))
+        data = json.loads(resp.data)
+        logging.info('data length: ' + str(len(data)))
+        self.assertTrue(len(data) > 0)
+        logging.info('data: ' + str(data))
+
+        # note assertIn is to determine if one string is the substring of another
+        # so use resp.data instead
         self.assertIn('iPhone 8', resp.data)
         self.assertNotIn('MacBook Pro', resp.data)
-        data = json.loads(resp.data)
         query_item = data[0]
         self.assertEqual(query_item['name'], 'iPhone 8')
 
