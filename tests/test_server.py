@@ -69,7 +69,7 @@ class TestProductServer(unittest.TestCase):
 
     def test_get_product(self):
         """ Get one product """
-        resp = self.app.get('/products/0')
+        resp = self.app.get('/products/1')
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         data = json.loads(resp.data)
         self.assertEqual(data['name'], 'iPhone 8')
@@ -82,7 +82,7 @@ class TestProductServer(unittest.TestCase):
     def test_get_product_none_in_list(self):
         """ Search for a product in a catalog with no products """
         server.Product.catalog.remove_all()
-        resp = self.app.get('/products/0')
+        resp = self.app.get('/products/1')
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
         # Ensure there are no products in the catalog:
         resp = self.app.get('/products')
