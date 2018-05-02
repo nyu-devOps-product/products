@@ -159,9 +159,13 @@ class Product(object):
 
     def serialize(self):
         """ Serializes a Product into a dictionary """
+        review_list = []
+        for review in self.review_list:
+            r = Review(review['username'], review['score'], review['date'], review['detail'])
+            review_list.append(r.serialize())
         result = {"id": self.id, "name": self.name, "price": self.price, "image_id": self.image_id,
                   "description": self.description,
-                  "review_list": [review.serialize() for review in self.review_list]}
+                  "review_list": review_list}
         return result
 
     def deserialize(self, data):
@@ -211,6 +215,9 @@ class Review(object):
         self.score = score
         self.date = date
         self.detail = detail
+
+    def __getitem__(self, item):
+        return getattr(self, item)
 
     def get_username(self):
         """ Returns Review username """
